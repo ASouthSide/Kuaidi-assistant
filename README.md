@@ -59,10 +59,11 @@
 4. 产物：`app/build/outputs/apk/debug/app-debug.apk`
 
 ### 命令行
+本仓库未内置 Gradle Wrapper（避免携带二进制文件），请使用本机 **Gradle 8.7**：
 ```bash
-./gradlew assembleDebug      # Linux / macOS
-gradlew.bat assembleDebug    # Windows
+gradle assembleDebug
 ```
+或在 Android Studio 中直接构建（推荐）。
 
 > 首次构建前需要在 `local.properties` 中配置 `sdk.dir`（Android Studio 会自动生成）。
 
