@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"><link rel="stylesheet" href="showcase.css"></head>
+<body>
+  <div class="card">
+    <div class="phone"><div class="phone-inner">
+      <div class="title-bar"><div class="title">快递助手</div><div class="subtitle">图片识别入口</div></div>
+      <div class="btn-row"><div class="btn">手动添加</div><div class="btn">粘贴短信</div><div class="btn" style="background:#2454D6">图片识别</div></div>
+      <div class="sec"><span class="sec-title">取件区</span></div>
+      <div class="overlay" style="align-items:center">
+        <div class="dialog">
+          <div class="dlg-title">图片识别快递</div>
+          <div class="dlg-item" style="border-top:1px solid #F0F1F3">从相册选择</div>
+          <div class="dlg-item">拍照</div>
+          <div class="dlg-actions"><div class="dlg-btn">取消</div></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="caption">⑥ 图片识别：相册选图 / 拍照</div>
+  </div>
+
+  <div class="card">
+    <div class="phone"><div class="phone-inner">
+      <div class="title-bar"><div class="title">快递助手</div><div class="subtitle">本地 OCR 识别</div></div>
+      <div class="sec"><span class="sec-title">取件区</span></div>
+      <div style="margin:10px 12px;background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.08);">
+        <div style="font-size:11px;color:#8A90A0;margin-bottom:6px;">识别原文（本地离线 OCR）</div>
+        <div style="font-size:11px;line-height:1.8;color:#3A4150;">
+          【菜鸟驿站】您有1个包裹已到XX校区菜鸟驿站，请凭105-3-7014取件
+        </div>
+      </div>
+      <div class="overlay" style="align-items:flex-start;padding-top:50px">
+        <div class="dialog">
+          <div class="dlg-title">识别结果 · 请核对修改</div>
+          <div class="field"><div class="field-label">取件码</div><div class="field-input blue">105-3-7014</div></div>
+          <div class="field"><div class="field-label">取件点</div><div class="field-input">XX校区菜鸟驿站</div></div>
+          <div class="field"><div class="field-label">快递公司</div><div class="field-input">菜鸟</div></div>
+          <div class="dlg-actions"><div class="dlg-btn">取消</div><div class="dlg-btn primary">确认入库</div></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="caption">⑦ 识别后可编辑，确认再入库</div>
+  </div>
+</body></html>

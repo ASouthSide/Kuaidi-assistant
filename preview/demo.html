@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>添加应用功能演示</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #E8EAEF;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 24px;
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    color: #1F2430;
+  }
+  .col { display: flex; flex-direction: column; align-items: center; }
+  .phone {
+    width: 360px; height: 660px; background: #F5F6F8;
+    border-radius: 26px; overflow: hidden; position: relative;
+    box-shadow: 0 10px 28px rgba(0,0,0,.18);
+    border: 6px solid #1F2430;
+  }
+  .phone-inner { width: 100%; height: 100%; position: relative; overflow: hidden; border-radius: 20px; }
+
+  /* 背景 APP 简化 */
+  .title-bar { background: #3B6EF7; padding: 12px 16px; }
+  .title { color: #fff; font-size: 18px; font-weight: 700; }
+  .subtitle { color: #D8E2FF; font-size: 10px; margin-top: 2px; }
+  .fake-btn-row { display: flex; gap: 6px; padding: 8px 12px 0; }
+  .fake-btn { flex: 1; height: 34px; border-radius: 18px; background: #3B6EF7; opacity: .9; }
+  .fake-line { height: 14px; background: #DDE1E8; border-radius: 7px; margin: 10px 16px 0; }
+  .fake-line.w60 { width: 60%; }
+  .fake-line.w80 { width: 80%; }
+  .fake-jump { position: absolute; left: 12px; right: 12px; bottom: 12px; background: #fff; border-radius: 12px; padding: 8px; opacity: .9; }
+  .fake-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+  .fake-cell { height: 54px; border: 2px solid #3B6EF7; border-radius: 10px; background: #F2F4F8; }
+
+  /* 遮罩 + 对话框 */
+  .overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,.38);
+    display: flex; align-items: center; justify-content: center;
+    padding: 18px;
+  }
+  .dialog {
+    width: 100%; background: #fff; border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(0,0,0,.3);
+    overflow: hidden;
+    max-height: 88%;
+    display: flex; flex-direction: column;
+  }
+  .dlg-title { font-size: 16px; font-weight: 700; padding: 16px 20px 6px; }
+  .dlg-msg { font-size: 13px; color: #6B7280; padding: 0 20px 10px; }
+  .dlg-list { overflow-y: hidden; }
+  .dlg-item {
+    padding: 12px 20px; font-size: 13px; border-top: 1px solid #F0F1F3;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .dlg-item .name { font-weight: 500; }
+  .dlg-item .pkg { color: #9AA1AE; font-size: 11px; }
+  .dlg-actions { display: flex; justify-content: flex-end; gap: 6px; padding: 10px 14px 14px; }
+  .dlg-btn { font-size: 14px; font-weight: 600; color: #3B6EF7; padding: 8px 14px; border-radius: 8px; }
+  .dlg-btn.primary { background: #EAF0FF; }
+  .dlg-input {
+    margin: 2px 20px 6px; border: 1.5px solid #3B6EF7; border-radius: 10px;
+    padding: 11px 14px; font-size: 15px; color: #1F2430; background: #fff;
+  }
+
+  .caption { margin-top: 14px; font-size: 13px; color: #4A5260; font-weight: 600; }
+</style>
+</head>
+<body>
+
+  <!-- 第 1 步：选择应用 -->
+  <div class="col">
+    <div class="phone"><div class="phone-inner">
+      <div class="title-bar">
+        <div class="title">快递助手</div>
+        <div class="subtitle">自动识别快递短信 · 取件管理 · v1.6</div>
+      </div>
+      <div class="fake-btn-row"><div class="fake-btn"></div><div class="fake-btn"></div><div class="fake-btn"></div></div>
+      <div class="fake-line w60"></div>
+      <div class="fake-line w80"></div>
+      <div class="fake-jump">
+        <div class="fake-grid">
+          <div class="fake-cell"></div><div class="fake-cell"></div>
+          <div class="fake-cell"></div><div class="fake-cell"></div>
+        </div>
+      </div>
+
+      <div class="overlay">
+        <div class="dialog">
+          <div class="dlg-title">选择要添加的应用</div>
+          <div class="dlg-list">
+            <div class="dlg-item"><span class="name">支付宝</span><span class="pkg">AlipayGphone</span></div>
+            <div class="dlg-item"><span class="name">快手</span><span class="pkg">smile.gifmaker</span></div>
+            <div class="dlg-item"><span class="name">小红书</span><span class="pkg">xingin.xhs</span></div>
+            <div class="dlg-item"><span class="name">唯品会</span><span class="pkg">vipshop</span></div>
+            <div class="dlg-item"><span class="name">苏宁易购</span><span class="pkg">suning.ebuy</span></div>
+            <div class="dlg-item"><span class="name">美团</span><span class="pkg">meituan</span></div>
+          </div>
+          <div class="dlg-actions"><div class="dlg-btn">取消</div></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="caption">① 点「添加应用」→ 选择手机里的 App</div>
+  </div>
+
+  <!-- 第 2 步：确认名称 -->
+  <div class="col">
+    <div class="phone"><div class="phone-inner">
+      <div class="title-bar">
+        <div class="title">快递助手</div>
+        <div class="subtitle">自动识别快递短信 · 取件管理 · v1.6</div>
+      </div>
+      <div class="fake-btn-row"><div class="fake-btn"></div><div class="fake-btn"></div><div class="fake-btn"></div></div>
+      <div class="fake-line w60"></div>
+      <div class="fake-line w80"></div>
+      <div class="fake-jump">
+        <div class="fake-grid">
+          <div class="fake-cell"></div><div class="fake-cell"></div>
+          <div class="fake-cell"></div><div class="fake-cell"></div>
+        </div>
+      </div>
+
+      <div class="overlay">
+        <div class="dialog">
+          <div class="dlg-title">确认应用名称</div>
+          <div class="dlg-msg">已链接：com.smile.gifmaker</div>
+          <div class="dlg-input">快手</div>
+          <div class="dlg-actions">
+            <div class="dlg-btn">取消</div>
+            <div class="dlg-btn primary">保存</div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+    <div class="caption">② 弹出确认框，可改名后保存</div>
+  </div>
+
+</body>
+</html>

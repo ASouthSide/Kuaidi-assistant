@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>快递助手 v1.6 预览</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    width: 390px;
+    background: #F5F6F8;
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    color: #1F2430;
+  }
+  .title-bar { background: #3B6EF7; padding: 12px 16px; }
+  .title { color: #fff; font-size: 19px; font-weight: 700; }
+  .subtitle { color: #D8E2FF; font-size: 11px; margin-top: 3px; }
+
+  .filter-row { display: flex; padding: 8px 12px 0; }
+  .filter-col { flex: 1; min-width: 0; }
+  .filter-col + .filter-col { margin-left: 8px; }
+  .filter-label { font-size: 10px; color: #8A90A0; }
+  .spinner { display: flex; align-items: center; justify-content: space-between; padding: 7px 0 5px; }
+  .spinner .val { font-size: 13px; color: #1F2430; }
+  .spinner .arrow { font-size: 11px; color: #4A5260; }
+
+  .btn-row { display: flex; padding: 6px 12px 0; }
+  .btn-row.second { padding-bottom: 6px; }
+  .btn {
+    flex: 1; background: #3B6EF7; color: #fff; border-radius: 22px;
+    text-align: center; padding: 11px 0; font-size: 13px; font-weight: 500;
+    box-shadow: 0 2px 3px rgba(59,110,247,.35);
+  }
+  .btn + .btn { margin-left: 6px; }
+
+  .section-header { display: flex; align-items: center; padding: 6px 14px; }
+  .section-title { font-size: 16px; font-weight: 700; }
+  .section-count { flex: 1; text-align: right; font-size: 12px; color: #8A90A0; }
+  .section-arrow { font-size: 12px; color: #8A90A0; margin-left: 8px; }
+  .empty { text-align: center; color: #8A90A0; font-size: 14px; line-height: 2.1; padding: 30px 32px 34px; }
+  .empty .big { font-size: 15px; color: #7C8395; }
+
+  .jump-area { background: #fff; padding: 8px 12px 10px; }
+  .jump-header { display: flex; align-items: center; }
+  .jump-title { font-size: 14px; font-weight: 700; }
+  .jump-arrow { margin-left: auto; font-size: 12px; color: #8A90A0; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .plat-btn {
+    aspect-ratio: 1 / 1;
+    display: flex; align-items: center; justify-content: center;
+    background: #F2F4F8; border: 2px solid #3B6EF7; border-radius: 12px;
+    color: #3B6EF7; font-size: 14px; font-weight: 700;
+    box-shadow: 0 2px 4px rgba(31,36,48,.22);
+  }
+  .add-btn {
+    margin-top: 8px;
+    height: 56px;
+    display: flex; align-items: center; justify-content: center;
+    background: #F2F4F8; border: 2px solid #3B6EF7; border-radius: 12px;
+    color: #3B6EF7; font-size: 14px; font-weight: 700;
+    box-shadow: 0 2px 4px rgba(31,36,48,.18);
+  }
+</style>
+</head>
+<body>
+
+  <div class="title-bar">
+    <div class="title">快递助手</div>
+    <div class="subtitle">自动识别快递短信 · 取件管理 · v1.6</div>
+  </div>
+
+  <div class="filter-row">
+    <div class="filter-col"><div class="filter-label">日期</div><div class="spinner"><span class="val">全部</span><span class="arrow">▼</span></div></div>
+    <div class="filter-col"><div class="filter-label">快递</div><div class="spinner"><span class="val">全部</span><span class="arrow">▼</span></div></div>
+    <div class="filter-col"><div class="filter-label">地址</div><div class="spinner"><span class="val">全部</span><span class="arrow">▼</span></div></div>
+  </div>
+
+  <div class="btn-row">
+    <div class="btn">手动添加</div>
+    <div class="btn">粘贴短信</div>
+    <div class="btn">图片识别</div>
+  </div>
+  <div class="btn-row second">
+    <div class="btn">身份码</div>
+    <div class="btn">地址管理</div>
+    <div class="btn">设置</div>
+  </div>
+
+  <div class="section-header">
+    <span class="section-title">取件区</span>
+    <span class="section-count">共 0 件</span>
+    <span class="section-arrow">▾</span>
+  </div>
+  <div class="empty">
+    <div class="big">暂无快件</div>
+    <div style="height:8px"></div>
+    <div>收到快递短信会自动识别入库<br>也可点「粘贴短信」或「图片识别」</div>
+  </div>
+
+  <div class="jump-area">
+    <div class="jump-header">
+      <span class="jump-title">跳转区</span>
+      <span class="jump-arrow">▾</span>
+    </div>
+    <div class="grid">
+      <div class="plat-btn">拼多多</div>
+      <div class="plat-btn">淘宝</div>
+      <div class="plat-btn">抖音</div>
+      <div class="plat-btn">京东</div>
+    </div>
+    <div class="add-btn">＋ 添加应用</div>
+  </div>
+
+</body>
+</html>

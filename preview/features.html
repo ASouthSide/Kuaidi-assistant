@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>v1.7 功能效果</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #E8EAEF;
+    display: flex; align-items: flex-start; gap: 16px; padding: 20px;
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    color: #1F2430;
+  }
+  .col { display: flex; flex-direction: column; align-items: center; }
+  .phone {
+    width: 360px; height: 700px; background: #F5F6F8;
+    border-radius: 26px; overflow: hidden; position: relative;
+    border: 6px solid #1F2430; box-shadow: 0 10px 28px rgba(0,0,0,.18);
+  }
+  .phone-inner { width: 100%; height: 100%; position: relative; overflow: hidden; border-radius: 20px; }
+
+  .title-bar { background: #3B6EF7; padding: 11px 16px; }
+  .title { color: #fff; font-size: 18px; font-weight: 700; }
+  .subtitle { color: #D8E2FF; font-size: 10px; margin-top: 2px; }
+  .fake-btn-row { display: flex; gap: 6px; padding: 8px 12px 0; }
+  .fake-btn { flex: 1; height: 32px; border-radius: 16px; background: #3B6EF7; opacity: .9; }
+  .sec { font-size: 15px; font-weight: 700; padding: 10px 14px 4px; }
+  .empty { text-align: center; color: #8A90A0; font-size: 12px; line-height: 2; padding: 18px 20px; }
+  .jump-area { position: absolute; left: 10px; right: 10px; bottom: 10px; background: #fff; border-radius: 12px; padding: 8px; }
+  .jump-title { font-size: 13px; font-weight: 700; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .cell { aspect-ratio: 1/1; border: 2px solid #3B6EF7; border-radius: 10px; background: #F2F4F8; display: flex; align-items: center; justify-content: center; color: #3B6EF7; font-weight: 700; font-size: 12px; }
+  .addbar { margin-top: 8px; height: 40px; border: 2px solid #3B6EF7; border-radius: 10px; background: #F2F4F8; display: flex; align-items: center; justify-content: center; color: #3B6EF7; font-weight: 700; font-size: 12px; }
+
+  .overlay { position: absolute; inset: 0; background: rgba(0,0,0,.38); display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .dialog { width: 100%; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 12px 30px rgba(0,0,0,.3); display: flex; flex-direction: column; max-height: 90%; }
+  .dlg-title { font-size: 16px; font-weight: 700; padding: 15px 18px 6px; }
+  .search { margin: 4px 16px 8px; border: 1.5px solid #D0D4DC; border-radius: 10px; padding: 9px 12px; color: #9AA1AE; font-size: 13px; }
+  .dlg-list { overflow: hidden; }
+  .dlg-item { padding: 11px 18px; font-size: 13px; border-top: 1px solid #F0F1F3; display: flex; justify-content: space-between; }
+  .dlg-item .pkg { color: #9AA1AE; font-size: 11px; }
+  .dlg-actions { display: flex; justify-content: flex-end; padding: 8px 12px 12px; }
+  .dlg-btn { font-size: 14px; font-weight: 600; color: #3B6EF7; padding: 8px 14px; }
+  .opt-item { padding: 16px 20px; font-size: 15px; border-top: 1px solid #F0F1F3; }
+
+  .caption { margin-top: 12px; font-size: 12px; color: #4A5260; font-weight: 600; text-align: center; }
+</style>
+</head>
+<body>
+
+  <!-- 1) 5 个应用 → 自动变 3 列 -->
+  <div class="col">
+    <div class="phone"><div class="phone-inner">
+      <div class="title-bar">
+        <div class="title">快递助手</div>
+        <div class="subtitle">自动识别快递短信 · 取件管理 · v1.7</div>
+      </div>
+      <div class="fake-btn-row"><div class="fake-btn"></div><div class="fake-btn"></div><div class="fake-btn"></div></div>
+      <div class="sec">取件区</div>
+      <div class="empty">暂无快件<br>收到快递短信会自动识别入库</div>
+
+      <div class="jump-area">
+        <div class="jump-title">跳转区</div>
+        <div class="grid3">
+          <div class="cell">拼多多</div>
+          <div class="cell">淘宝</div>
+          <div class="cell">抖音</div>
+          <div class="cell">京东</div>
+          <div class="cell">快手</div>
+        </div>
+        <div class="addbar">＋ 添加应用</div>
+      </div>
+    </div></div>
+    <div class="caption">① 5 个应用 → 自动 3 列</div>
+  </div>
+
+  <!-- 2) 选应用 + 搜索 -->
+  <div class="col">
+    <div class="phone"><div class="phone-inner">
+      <div class="title-bar">
+        <div class="title">快递助手</div>
+        <div class="subtitle">自动识别快递短信 · 取件管理 · v1.7</div>
+      </div>
+      <div class="fake-btn-row"><div class="fake-btn"></div><div class="fake-btn"></div><div class="fake-btn"></div></div>
+      <div class="sec">取件区</div>
+      <div class="empty">暂无快件<br>收到快递短信会自动识别入库</div>
+      <div class="jump-area">
+        <div class="jump-title">跳转区</div>
+        <div class="grid3">
+          <div class="cell">拼多多</div><div class="cell">淘宝</div><div class="cell">抖音</div>
+          <div class="cell">京东</div><div class="cell">快手</div>
+        </div>
+        <div class="addbar">＋ 添加应用</div>
+      </div>
+
+      <div class="overlay">
+        <div class="dialog">
+          <div class="dlg-title">选择要添加的应用</div>
+          <div class="search">🔍 搜索应用名称 / 包名</div>
+          <div class="dlg-list">
+            <div class="dlg-item"><span>支付宝</span><span class="pkg">AlipayGphone</span></div>
+            <div class="dlg-item"><span>快手</span><span class="pkg">smile.gifmaker</span></div>
+            <div class="dlg-item"><span>小红书</span><span class="pkg">xingin.xhs</span></div>
+            <div class="dlg-item"><span>唯品会</span><span class="pkg">vipshop</span></div>
+            <div class="dlg-item"><span>美团</span><span class="pkg">meituan</span></div>
+            <div class="dlg-item"><span>Discord</span><span class="pkg">com.discord</span></div>
+          </div>
+          <div class="dlg-actions"><div class="dlg-btn">取消</div></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="caption">② 选应用支持搜索</div>
+  </div>
+
+  <!-- 3) 淘宝：启动 / 身份码 -->
+  <div class="col">
+    <div class="phone"><div class="phone-inner">
+      <div class="title-bar">
+        <div class="title">快递助手</div>
+        <div class="subtitle">自动识别快递短信 · 取件管理 · v1.7</div>
+      </div>
+      <div class="fake-btn-row"><div class="fake-btn"></div><div class="fake-btn"></div><div class="fake-btn"></div></div>
+      <div class="sec">取件区</div>
+      <div class="empty">暂无快件<br>收到快递短信会自动识别入库</div>
+      <div class="jump-area">
+        <div class="jump-title">跳转区</div>
+        <div class="grid3">
+          <div class="cell">拼多多</div><div class="cell">淘宝</div><div class="cell">抖音</div>
+          <div class="cell">京东</div><div class="cell">快手</div>
+        </div>
+        <div class="addbar">＋ 添加应用</div>
+      </div>
+
+      <div class="overlay">
+        <div class="dialog">
+          <div class="dlg-title">淘宝</div>
+          <div class="opt-item">启动淘宝</div>
+          <div class="opt-item">身份码</div>
+          <div class="dlg-actions"><div class="dlg-btn">取消</div></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="caption">③ 淘宝：启动 / 身份码</div>
+  </div>
+
+</body>
+</html>

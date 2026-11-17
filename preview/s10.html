@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"><link rel="stylesheet" href="showcase.css">
+<style>
+  .tilewrap { position: relative; }
+  .xbadge {
+    position: absolute; top: 2px; right: 2px; width: 22px; height: 22px;
+    border-radius: 50%; background: #EF4444; color: #fff;
+    font-size: 14px; font-weight: 700; line-height: 22px; text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,.25);
+  }
+  .trash { width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; color: #3B6EF7; font-size: 15px; margin-right: 6px; }
+  .jump-header-row { display: flex; align-items: center; }
+  .jump-header-row .t { font-size: 12px; font-weight: 700; flex: 1; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="phone" style="height:760px"><div class="phone-inner">
+      <div class="title-bar"><div class="title">快递助手</div><div class="subtitle">跳转区 · 删除模式</div></div>
+      <div class="sec"><span class="sec-title">取件区</span><span class="sec-count">共 0 件</span><span class="sec-arrow">▾</span></div>
+      <div class="empty">暂无快件</div>
+      <div class="jump-area" style="position:static;margin:8px;">
+        <div class="jump-header-row">
+          <span class="t">跳转区</span>
+          <span class="trash">🗑</span>
+          <span style="font-size:11px;color:#8A90A0;">▾</span>
+        </div>
+        <div class="grid">
+          <div class="tilewrap"><div class="cell">拼多多</div><div class="xbadge">×</div></div>
+          <div class="tilewrap"><div class="cell">淘宝</div><div class="xbadge">×</div></div>
+          <div class="tilewrap"><div class="cell">抖音</div><div class="xbadge">×</div></div>
+          <div class="tilewrap"><div class="cell">京东</div><div class="xbadge">×</div></div>
+          <div class="tilewrap"><div class="cell">快手</div><div class="xbadge">×</div></div>
+          <div class="tilewrap"><div class="cell">支付宝</div><div class="xbadge">×</div></div>
+        </div>
+        <div class="addbar">＋ 添加应用</div>
+      </div>
+    </div></div>
+    <div class="caption">删除模式：标题旁垃圾桶图标 → 每个应用右上角出现 ×</div>
+  </div>
+
+  <div class="card">
+    <div class="phone" style="height:760px"><div class="phone-inner">
+      <div class="title-bar"><div class="title">快递助手</div><div class="subtitle">跳转区 · 正常模式</div></div>
+      <div class="sec"><span class="sec-title">取件区</span><span class="sec-count">共 0 件</span><span class="sec-arrow">▾</span></div>
+      <div class="empty">暂无快件</div>
+      <div class="jump-area" style="position:static;margin:8px;">
+        <div class="jump-header-row">
+          <span class="t">跳转区</span>
+          <span class="trash">🗑</span>
+          <span style="font-size:11px;color:#8A90A0;">▾</span>
+        </div>
+        <div class="grid">
+          <div class="cell">拼多多</div><div class="cell">淘宝</div>
+          <div class="cell">抖音</div><div class="cell">京东</div>
+          <div class="cell">快手</div><div class="cell">支付宝</div>
+        </div>
+        <div class="addbar">＋ 添加应用</div>
+      </div>
+    </div></div>
+    <div class="caption">正常模式：点应用直接启动</div>
+  </div>
+</body></html>
