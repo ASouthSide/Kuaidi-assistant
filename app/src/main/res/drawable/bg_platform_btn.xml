@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 平台方块按钮：蓝色描边 + 浅灰立体填充 + 按压涟漪 -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="#334A7CF7">
+    <item>
+        <layer-list>
+            <!-- 底部阴影层（立体感） -->
+            <item>
+                <shape android:shape="rectangle">
+                    <corners android:radius="14dp" />
+                    <solid android:color="#C3C9D4" />
+                </shape>
+            </item>
+            <!-- 面层：浅灰填充 + 蓝色描边 -->
+            <item android:bottom="4dp">
+                <shape android:shape="rectangle">
+                    <corners android:radius="14dp" />
+                    <solid android:color="#F2F4F8" />
+                    <stroke
+                        android:width="2dp"
+                        android:color="#3B6EF7" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+</ripple>

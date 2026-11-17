@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="28" viewBox="0 0 150 28">
+  <rect x="1" y="2" width="24" height="24" rx="7" fill="#3B6EF7"/>
+  <g fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M7 10 L13 7 L19 10 L19 17 L13 20 L7 17 Z"/>
+    <path d="M7 10 L13 13 L19 10"/>
+    <path d="M13 13 L13 20"/>
+  </g>
+  <text x="33" y="20" font-family="PingFang SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700" fill="#3B6EF7">快递助手</text>
+</svg>
