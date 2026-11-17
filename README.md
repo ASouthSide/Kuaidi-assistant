@@ -1,5 +1,7 @@
 # 快递助手 Kuaidi Assistant
 
+[English](README.en.md) | 中文
+
 原生 Android 快递取件管理 App：**自动读取快递短信 → 解析取件码/取件点/地址/快递公司 → 列表管理 → 一键跳转取件应用与身份码**。
 
 > 数据全部保存在手机本地（SharedPreferences），不联网上传。
@@ -64,6 +66,8 @@
 gradle assembleDebug
 ```
 或在 Android Studio 中直接构建（推荐）。
+
+> CI：[`.github/workflows/android.yml`](.github/workflows/android.yml) 会在每次推送到 `main` 时自动构建 APK，可在 Actions 页面下载产物。
 
 > 首次构建前需要在 `local.properties` 中配置 `sdk.dir`（Android Studio 会自动生成）。
 
