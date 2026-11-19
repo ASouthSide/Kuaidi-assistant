@@ -21,6 +21,8 @@ local.properties
 *.class
 *.keystore
 *.jks
+*.p12
+*.pfx
 release/
 
 # 日志与临时文件
@@ -32,3 +34,4 @@ build.ps1
 .DS_Store
 Thumbs.db
 desktop.ini
+

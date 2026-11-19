@@ -1,0 +1,4 @@
+<resources>
+    <string name="home_subtitle">取件管理 · %1$s</string>
+    <string name="empty_inbox">暂无快件\n\n点「粘贴短信」、「手动添加」或「图片识别」录入</string>
+</resources>

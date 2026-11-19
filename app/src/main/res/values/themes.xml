@@ -2,17 +2,42 @@
     <style name="Theme.KuaidiAssistant" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorOnPrimary">@color/white</item>
+        <item name="android:statusBarColor">@color/ui_background</item>
+        <item name="android:windowLightStatusBar">@bool/ui_light_system_icons_background</item>
+        <item name="android:navigationBarColor">@color/ui_surface</item>
+        <item name="android:windowLightNavigationBar">@bool/ui_light_system_icons_background</item>
         <!-- 所有 AlertDialog 统一使用圆角磨砂主题 -->
+        <item name="materialButtonOutlinedStyle">@style/Widget.Kuaidi.GlassButton</item>
         <item name="alertDialogTheme">@style/Theme.KuaidiAssistant.Dialog</item>
     </style>
 
     <!-- 弹窗：圆角 + 透明磨砂（Android 12+ 会叠加真实背景模糊） -->
+    <style name="Widget.Kuaidi.GlassButton" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="cornerRadius">17dp</item>
+        <item name="backgroundTint">@color/glass_inner_start</item>
+        <item name="strokeColor">@color/ui_line</item>
+        <item name="android:textColor">@color/ui_accent</item>
+    </style>
+
+    <style name="Widget.Kuaidi.GlassNavigationEntry" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="cornerRadius">16dp</item>
+        <item name="backgroundTint">#F4FFFFFF</item>
+        <item name="strokeColor">#DCE7F5</item>
+        <item name="android:textColor">#244978</item>
+    </style>
+
+    <style name="Widget.Kuaidi.GlassNavigationTab" parent="Widget.Material3.Button.TextButton">
+        <item name="cornerRadius">16dp</item>
+        <item name="backgroundTint">@color/navigation_tab_tint</item>
+        <item name="android:textColor">#244978</item>
+    </style>
+
     <style name="Theme.KuaidiAssistant.Dialog" parent="Theme.Material3.DayNight.Dialog.Alert">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@drawable/bg_dialog_frosted</item>
         <item name="android:backgroundDimEnabled">true</item>
-        <item name="android:backgroundDimAmount">0.42</item>
-        <item name="android:windowBackgroundBlurRadius">24dp</item>
+        <item name="android:backgroundDimAmount">0.36</item>
+        <item name="android:windowBackgroundBlurRadius">26dp</item>
         <item name="android:windowMinWidthMajor">82%</item>
         <item name="android:windowMinWidthMinor">82%</item>
     </style>

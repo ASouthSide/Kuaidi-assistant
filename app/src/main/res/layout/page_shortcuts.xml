@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="@drawable/bg_section_stack"
+    android:paddingStart="14dp" android:paddingTop="3dp" android:paddingEnd="14dp"
+    android:paddingBottom="11dp">
+    <LinearLayout android:id="@+id/header_jump" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:minHeight="52dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="快捷应用" android:textColor="@color/ui_text" android:textSize="17sp" android:textStyle="bold" />
+        <Space android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_edit_jump" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="48dp" android:minWidth="48dp"
+            android:text="编辑" />
+    </LinearLayout>
+    <com.kuaidi.assistant.DeckScrollHost android:id="@+id/deck_scroll_host" android:layout_width="match_parent"
+        android:layout_height="0dp" android:layout_weight="1">
+        <ScrollView android:id="@+id/jump_panel" android:layout_width="match_parent"
+            android:layout_height="match_parent" android:fillViewport="false">
+            <LinearLayout android:id="@+id/jump_container" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:orientation="vertical" />
+        </ScrollView>
+    </com.kuaidi.assistant.DeckScrollHost>
+</LinearLayout>

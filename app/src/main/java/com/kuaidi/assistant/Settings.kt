@@ -12,12 +12,43 @@ object Settings {
     private const val KEY_CUSTOM_APPS = "custom_apps"
 
     fun getOpenIdentityOnPickup(ctx: Context): Boolean =
-        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_OPEN_IDENTITY, true)
+        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_OPEN_IDENTITY, false)
 
     fun setOpenIdentityOnPickup(ctx: Context, value: Boolean) {
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
             .putBoolean(KEY_OPEN_IDENTITY, value).apply()
     }
+
+    internal fun homePage(ctx: Context): DashboardPage {
+        val value = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString("home_destination", null)
+        return DashboardPage.entries.firstOrNull { it.name == value } ?: DashboardPage.PACKAGES
+    }
+
+    internal fun setHomePage(ctx: Context, page: DashboardPage) {
+        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putString("home_destination", page.name).apply()
+    }
+
+    fun restoreOnBoot(ctx: Context): Boolean =
+        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean("restore_on_boot", false)
+
+    fun setRestoreOnBoot(ctx: Context, enabled: Boolean) {
+        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean("restore_on_boot", enabled).apply()
+    }
+
+    fun identityLocations(ctx: Context): Set<String>? =
+        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getStringSet("identity_locations", null)?.toSet()
+
+    fun setIdentityLocations(ctx: Context, locations: Set<String>?) {
+        val editor = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+        if (locations == null) editor.remove("identity_locations")
+        else editor.putStringSet("identity_locations", locations)
+        editor.apply()
+    }
+
+    fun shouldOpenIdentity(ctx: Context, location: String, address: String): Boolean =
+        getOpenIdentityOnPickup(ctx) &&
+            (identityLocations(ctx)?.let { location.trim() in it || address.trim() in it } ?: true)
 
     fun getOverdueDays(ctx: Context): Int =
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getInt(KEY_OVERDUE_DAYS, 4)

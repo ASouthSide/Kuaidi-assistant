@@ -1,94 +1,39 @@
-# Kuaidi Assistant (快递助手)
+# Kuaidi Assistant 2.0.0
 
-A native Android app for managing parcel pickups: **auto-reads delivery SMS → parses pickup code / pickup point / address / carrier → manages your pickup list → one-tap jump to shopping apps and Taobao identity code**.
+[中文](README.md) | English
 
-> All data stays on-device (SharedPreferences). No upload. Sample data in this repository is anonymized.
+Kuaidi Assistant is a native Android parcel pickup organizer. The signed sideload release can receive incoming parcel texts, extract pickup details and add them to the inbox. Image recognition runs on the device.
 
-[中文说明](README.md)
+## Download
+
+Get `kuaidi-assistant-2.0.0-release.apk` from the [v2.0.0 release](https://github.com/ASouthSide/Kuaidi-assistant/releases/tag/v2.0.0). It supports Android 8.0 (API 26) or later. Open **Settings → Permissions and overdue reminders** to enable incoming texts and notifications as needed. Automatic SMS intake starts with newly received messages after permission is granted.
+
+Android requires matching package names and signing certificates for updates. The v1.8 debug APK and the signed 2.0.0 release use different certificates. Uninstalling an installed edition removes its local app data.
 
 ## Features
 
-### Data entry
-- **SMS auto-parse**: listens for delivery SMS in the background and stores parsed packages automatically
-- **Paste SMS**: paste any delivery SMS to extract the pickup code
-- **Manual add**: pickup code / pickup point / address / carrier
-- **Image OCR**: pick a screenshot from gallery or take a photo; offline Chinese OCR (ML Kit) extracts the text, with editable preview before saving
-- **Broad format support**: Cainiao, Tuxi, YTO, ZTO, JD, SF Express, J&T, Yunda, STO, EMS, Deppon, Best, etc.
+- **Add parcels** from new SMS messages in the sideload edition, pasted text, manual entry, camera photos or gallery images. Local Chinese OCR lets you review and edit results before saving.
+- **Organize pickups** with pending and picked filters, combinations of date/carrier/pickup point, and optional location aliases. Pending parcels at the same pickup point can be grouped. Single parcels and groups can both be folded. Mark parcels as picked, undo the status, or delete individual records.
+- **Open apps and the Taobao pickup ID** through configurable shortcuts. You can open the ID explicitly or configure which pickup points or addresses open it when a parcel is marked as picked.
+- **Manage recognition rules in the app** by previewing sanitized sample texts or editing pickup-code labels and carrier aliases. Rules also work with pasted texts and OCR.
+- **Navigate four pages** by vertical swipes, bottom tabs, or the side menu. The side menu editor can independently reorder cards, bottom tabs and menu items with drag handles or arrows. The center home button has a configurable destination. Swiping up at the last card stays on that card.
+- **Personalize the interface** with separate launch and app background photos, optional blur, a skippable 0–5 second launch screen, rounded frosted surfaces and system dark mode.
+- **Configure reminders and permissions** with a 1–365 day overdue threshold, permission and notification channel status, and optional restoration of reminder scheduling after a system restart.
+- **Clear temporary files** while retaining parcel records, rules and photos. The About section shows privacy information, the project link, version and license.
 
-### Pickup management
-- Picked / not-picked status with one-tap toggle
-- **Overdue reminder**: local notification when unpicked beyond a configurable threshold (3 / 4 / 5 / 7 days)
-- **Combined filters**: by date (today / last 3 days / last 7 days), carrier, pickup address
-- **Address aliases**: rename pickup points (e.g. `XX Campus Duoduo Station` → `Duoduo Station`)
+## Editions and data
 
-### Quick launch
-- **Jump area**: one-tap launch of Pinduoduo / Taobao / Douyin / JD and custom apps
-- **Adaptive grid**: 2 columns for ≤4 apps, 3 columns for ≥5 apps (max 3 per row)
-- **Add app**: choose from installed apps, searchable, confirm the display name
-- **Delete mode**: tap the trash icon next to the section title, then tap the `×` on any app to remove it (persisted)
-- **Taobao**: tapping it offers `Launch Taobao` / `Identity code`
-- **Identity code**: deep-links to the Taobao identity code page (starts with `XN`)
-
-### UI
-- Collapsible pickup / jump sections
-- All dialogs use **rounded corners + translucent frosted glass** (real background blur on Android 12+)
-- Material3 DayNight theme
-
-## Screenshots
-
-| | | |
-|---|---|---|
-| ![Home](preview/s1.png) | ![SMS](preview/s2.png) | ![Manual](preview/s3.png) |
-| Home overview | SMS auto-parse | Manual add / paste SMS |
-| ![OCR](preview/s4.png) | ![List](preview/s5.png) | ![Filter](preview/s6.png) |
-| Image OCR | Pickup list | Filters + address aliases |
-| ![Identity](preview/s7.png) | ![Jump](preview/s8.png) | ![Settings](preview/s9.png) |
-| Identity code | Jump area / delete mode | Overdue reminder / settings |
-
-## Requirements
-
-- JDK 17
-- Android SDK (compileSdk 34 / minSdk 26)
-- Gradle 8.7
+The `sideload` edition (`com.kuaidi.assistant`) requests `RECEIVE_SMS` for new messages. The `store` variant (`com.kuaidi.assistant.store`) supports paste, manual input and OCR. The app stores parcel records, rules and photos in app storage and does not actively upload parcel data. System backups are controlled by device settings.
 
 ## Build
 
-### Android Studio (recommended)
-1. `File → Open` and select this directory
-2. Wait for Gradle sync
-3. `Build → Build Bundle(s)/APK(s) → Build APK(s)`
-4. Output: `app/build/outputs/apk/debug/app-debug.apk`
+Use JDK 17, Android SDK Platform 34, Build Tools 34.0.0 and the included Gradle 8.7 Wrapper.
 
-### Command line
-This repository does not bundle the Gradle Wrapper. Use a local **Gradle 8.7**:
-```bash
-gradle assembleDebug
+```sh
+./gradlew testSideloadDebugUnitTest testStoreDebugUnitTest assembleSideloadDebug assembleStoreDebug assembleSideloadRelease
 ```
 
-> For CI, the [`Build APK`](.github/workflows/android.yml) workflow builds the APK automatically on every push to `main`.
+On Windows, run `gradlew.bat` with the same tasks. With all dependencies cached, add `--offline`. The release build runs release Lint and produces an unsigned APK. Maintain the same signing key when distributing future upgrades.
 
-## Permissions
+See the [changelog](CHANGELOG.md). Developed by [ASouthSide](https://github.com/ASouthSide) and licensed under [MIT](LICENSE).
 
-| Permission | Purpose |
-|---|---|
-| `RECEIVE_SMS` / `READ_SMS` | Auto-read delivery SMS in the background |
-| `POST_NOTIFICATIONS` | Overdue pickup reminders |
-| `<queries>` (package visibility) | Query / launch Taobao, Pinduoduo, Douyin, JD, etc. |
-
-## Privacy
-
-- All package data is stored locally in `SharedPreferences`; nothing is uploaded
-- Sample station names, addresses and pickup codes in this repo are **fictional / anonymized** (e.g. `XX Campus Duoduo Station`)
-- No phone numbers, real addresses, signing keys or local paths are included
-
-## Tech stack
-
-- Kotlin + AndroidX + Material3
-- RecyclerView / ConstraintLayout
-- AlarmManager (overdue check)
-- ML Kit Chinese text recognition (offline OCR)
-- BroadcastReceiver (SMS listener)
-
-## License
-
-[MIT](LICENSE)

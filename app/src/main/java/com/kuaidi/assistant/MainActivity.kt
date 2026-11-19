@@ -1,25 +1,17 @@
 package com.kuaidi.assistant
 
-import android.Manifest
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.res.ColorStateList
-import android.graphics.Color
-import android.graphics.Typeface
-import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
-import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.FrameLayout
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.ScrollView
@@ -27,104 +19,114 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
 import androidx.core.widget.doAfterTextChanged
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.button.MaterialButton
-import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
-import java.io.File
-import java.util.Calendar
+import com.google.android.material.button.MaterialButtonToggleGroup
+import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var adapter: PackageAdapter
+    private val toggledPickupRows = mutableSetOf<String>()
     private lateinit var emptyView: TextView
     private lateinit var tvCount: TextView
     private lateinit var spinnerDate: Spinner
     private lateinit var spinnerCarrier: Spinner
     private lateinit var spinnerAddr: Spinner
+    private lateinit var packagesPage: View
+    private lateinit var shortcutsPage: View
+    private lateinit var statusFilter: MaterialButtonToggleGroup
 
-    private var allPackages: MutableList<Package> = mutableListOf()
-    private val aliases = mutableMapOf<String, String>()
+    private val inbox by lazy { ViewModelProvider(this)[PackageInboxViewModel::class.java] }
+    private val allPackages get() = inbox.packages
+    private val aliases get() = inbox.aliases
     private var setupInProgress = false
 
     private val dateOptions = listOf("全部", "今天", "近3天", "近7天")
 
-    private var currentPhotoUri: Uri? = null
+    private val imagePickup = ImagePickupController(this) { pkg ->
+        inbox.add(pkg)
+        reload()
+    }
 
     // 跳转区「删除模式」：开启后每个应用显示 ×，点击可删除
     private var deleteMode = false
 
-    // 相册选图（截图/购物软件截图）
-    private val galleryLauncher = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null) recognizeImage(uri)
+    private lateinit var deck: ViewPager2
+    private lateinit var navigationOrder: NavigationOrder
+    private lateinit var preferencesPage: PreferencesPage
+    private lateinit var visuals: AppVisuals
+    private var photoSlot = AppVisuals.Slot.BACKGROUND
+    private val themePicker = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        uri?.let { visuals.savePhoto(photoSlot, it) }
     }
-    // 拍照（包裹面单）
-    private val cameraLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-        if (success) currentPhotoUri?.let { recognizeImage(it) }
+    private val permissionRequest = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+        preferencesPage.refreshPermissions()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        deck = findViewById(R.id.dashboard_deck)
+        navigationOrder = NavigationOrder.load(this)
+        photoSlot = savedInstanceState?.getString("photo_slot")?.let(AppVisuals.Slot::valueOf)
+            ?: AppVisuals.Slot.BACKGROUND
+        visuals = AppVisuals(this)
+        preferencesPage = PreferencesPage(
+            this,
+            visuals,
+            ::chooseThemePhoto,
+            ::goHome,
+            { permission -> permissionRequest.launch(permission) }
+        )
+        packagesPage = layoutInflater.inflate(R.layout.page_packages, deck, false)
+        shortcutsPage = layoutInflater.inflate(R.layout.page_shortcuts, deck, false)
+        val pages = listOf(packagesPage, shortcutsPage, RulePage(this).view, preferencesPage.view)
+        val glassPanels = pages.map { FrostedPanelBackground(it, visuals.wallpaperView, dp(24), dp(7)) }
+        visuals.onWallpaperTexture = { texture -> glassPanels.forEach { it.setTexture(texture) } }
+        setupDeck(pages)
+        visuals.show(savedInstanceState == null)
+        imagePickup.restore(savedInstanceState)
 
-        emptyView = findViewById(R.id.tv_empty)
-        tvCount = findViewById(R.id.tv_count)
-        spinnerDate = findViewById(R.id.spinner_date)
-        spinnerCarrier = findViewById(R.id.spinner_carrier)
-        spinnerAddr = findViewById(R.id.spinner_addr)
+        emptyView = packagesPage.findViewById(R.id.tv_empty)
+        tvCount = packagesPage.findViewById(R.id.tv_count)
+        spinnerDate = packagesPage.findViewById(R.id.spinner_date)
+        spinnerCarrier = packagesPage.findViewById(R.id.spinner_carrier)
+        spinnerAddr = packagesPage.findViewById(R.id.spinner_addr)
+        statusFilter = packagesPage.findViewById(R.id.status_filter)
+        statusFilter.check(savedInstanceState?.getInt("package_status") ?: R.id.status_all)
+        statusFilter.addOnButtonCheckedListener { _, _, checked -> if (checked) refresh() }
 
-        val rv: RecyclerView = findViewById(R.id.rv_packages)
+        val rv: RecyclerView = packagesPage.findViewById(R.id.rv_packages)
+        toggledPickupRows.addAll(savedInstanceState?.getStringArrayList("open_pickup_groups").orEmpty())
         adapter = PackageAdapter(
-            mutableListOf(),
-            { loc -> PackageStore.displayName(loc, aliases) },
+            { key ->
+                if (!toggledPickupRows.add(key)) toggledPickupRows.remove(key)
+                refresh()
+            },
             ::togglePicked,
             ::confirmDelete
         )
         rv.layoutManager = LinearLayoutManager(this)
         rv.adapter = adapter
 
-        findViewById<Button>(R.id.btn_add).setOnClickListener { showAddDialog() }
-        findViewById<Button>(R.id.btn_paste).setOnClickListener { showPasteDialog() }
+        packagesPage.findViewById<Button>(R.id.btn_add).setOnClickListener { showAddDialog() }
+        packagesPage.findViewById<Button>(R.id.btn_paste).setOnClickListener { showPasteDialog() }
         findViewById<Button>(R.id.btn_idcode).setOnClickListener { openIdentityCode() }
-        findViewById<Button>(R.id.btn_addr_mgr).setOnClickListener { showAddressManager() }
-        findViewById<Button>(R.id.btn_image).setOnClickListener { showImageSourceDialog() }
-        findViewById<Button>(R.id.btn_settings).setOnClickListener { showSettingsDialog() }
+        packagesPage.findViewById<Button>(R.id.btn_addr_mgr).setOnClickListener { showAddressManager() }
+        packagesPage.findViewById<Button>(R.id.btn_image).setOnClickListener { imagePickup.showImageSourceDialog() }
 
         rebuildJumpGrid()
 
-        // 两个区域可折叠
-        findViewById<LinearLayout>(R.id.header_packages).setOnClickListener {
-            val c = findViewById<LinearLayout>(R.id.content_packages)
-            val arrow = findViewById<TextView>(R.id.arrow_packages)
-            val collapse = c.visibility == View.VISIBLE
-            c.visibility = if (collapse) View.GONE else View.VISIBLE
-            arrow.text = if (collapse) "▸" else "▾"
-        }
-        findViewById<LinearLayout>(R.id.header_jump).setOnClickListener {
-            val c = findViewById<LinearLayout>(R.id.jump_container)
-            val arrow = findViewById<TextView>(R.id.arrow_jump)
-            val collapse = c.visibility == View.VISIBLE
-            c.visibility = if (collapse) View.GONE else View.VISIBLE
-            arrow.text = if (collapse) "▸" else "▾"
-        }
-
-        // 删除模式：点跳转区标题旁的删除图标切换
-        findViewById<ImageView>(R.id.btn_edit_jump).setOnClickListener {
+        shortcutsPage.findViewById<MaterialButton>(R.id.btn_edit_jump).setOnClickListener {
             deleteMode = !deleteMode
-            Toast.makeText(
-                this,
-                if (deleteMode) "删除模式：点应用右上角 × 删除" else "已退出删除模式",
-                Toast.LENGTH_SHORT
-            ).show()
-            rebuildJumpGrid()
+            refreshShortcutEdit()
         }
 
         // 日期筛选（固定选项，只设一次）
@@ -134,21 +136,27 @@ class MainActivity : AppCompatActivity() {
         spinnerAddr.onItemSelectedListener = filterListener()
 
         reload()
-        requestSmsPermission()
-        scheduleDailyOverdueCheck()
+        OverdueScheduler.schedule(this)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt("package_status", statusFilter.checkedButtonId)
+        outState.putStringArrayList("open_pickup_groups", ArrayList(toggledPickupRows))
+        outState.putString("photo_slot", photoSlot.name)
+        imagePickup.save(outState)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onResume() {
         super.onResume()
         reload()
+        preferencesPage.refreshPermissions()
         OverdueReceiver.checkAndNotify(this)
     }
 
     // ---------- 数据与筛选 ----------
     private fun reload() {
-        allPackages = PackageStore.load(this)
-        aliases.clear()
-        aliases.putAll(PackageStore.loadAliases(this))
+        inbox.reload()
         populateFilters()
         refresh()
     }
@@ -192,56 +200,44 @@ class MainActivity : AppCompatActivity() {
         val dateSel = spinnerDate.selectedItem as? String ?: "全部"
         val carrierSel = spinnerCarrier.selectedItem as? String ?: "全部"
         val addrSel = spinnerAddr.selectedItem as? String ?: "全部"
-        val now = System.currentTimeMillis()
-
-        return allPackages.filter { p ->
-            val dateOk = when (dateSel) {
-                "今天" -> isSameDay(p.arriveTime, now)
-                "近3天" -> now - p.arriveTime < 3L * 86400000
-                "近7天" -> now - p.arriveTime < 7L * 86400000
-                else -> true
-            }
-            val carrierOk = carrierSel == "全部" || p.carrier == carrierSel
-            val addrOk = addrSel == "全部" || PackageStore.displayName(p.location, aliases) == addrSel
-            dateOk && carrierOk && addrOk
+        val picked = when (statusFilter.checkedButtonId) {
+            R.id.status_pending -> false
+            R.id.status_picked -> true
+            else -> null
         }
+        return inbox.filter(dateSel, carrierSel, addrSel, picked)
     }
 
     private fun refresh() {
-        adapter.list = applyFilter().toMutableList()
-        adapter.notifyDataSetChanged()
-        val empty = adapter.list.isEmpty()
+        val filtered = applyFilter()
+        adapter.submitList(packageRows(filtered, toggledPickupRows, allPackages) { location ->
+            PackageStore.displayName(location, aliases)
+        })
+        emptyView.setText(if (allPackages.isEmpty()) R.string.empty_inbox else R.string.empty_filtered)
+        val empty = filtered.isEmpty()
         emptyView.visibility = if (empty) View.VISIBLE else View.GONE
         if (::tvCount.isInitialized) {
-            tvCount.text = "共 ${adapter.list.size} 件"
+            tvCount.text = "${filtered.size} 件"
         }
-    }
-
-    private fun isSameDay(t1: Long, t2: Long): Boolean {
-        val c1 = Calendar.getInstance().apply { timeInMillis = t1 }
-        val c2 = Calendar.getInstance().apply { timeInMillis = t2 }
-        return c1.get(Calendar.YEAR) == c2.get(Calendar.YEAR) &&
-                c1.get(Calendar.DAY_OF_YEAR) == c2.get(Calendar.DAY_OF_YEAR)
     }
 
     // ---------- 操作 ----------
     private fun togglePicked(p: Package) {
         val markingPicked = !p.picked
-        PackageStore.togglePicked(this, p.id)
-        allPackages = PackageStore.load(this)
+        inbox.togglePicked(p.id)
         refresh()
         // 标记为已取时，按设置自动打开淘宝身份码
-        if (markingPicked && Settings.getOpenIdentityOnPickup(this)) {
+        if (markingPicked && Settings.shouldOpenIdentity(this, p.location, p.address)) {
             openIdentityCode()
         }
     }
 
     private fun confirmDelete(p: Package) {
-        AlertDialog.Builder(this)
+        FrostedDialogBuilder(this)
             .setTitle("删除快件")
             .setMessage("确定删除「${PackageStore.displayName(p.location, aliases)} · 取件码 ${p.pickupCode}」？")
             .setPositiveButton("删除") { _, _ ->
-                PackageStore.remove(this, p.id)
+                inbox.remove(p.id)
                 reload()
             }
             .setNegativeButton("取消", null)
@@ -259,7 +255,7 @@ class MainActivity : AppCompatActivity() {
         val etCarrier = EditText(this).apply { hint = "快递公司（可选，如 中通/圆通）" }
         v.addView(etCode); v.addView(etLoc); v.addView(etAddr); v.addView(etCarrier)
 
-        AlertDialog.Builder(this)
+        FrostedDialogBuilder(this)
             .setTitle("手动添加快件")
             .setView(v)
             .setPositiveButton("添加") { _, _ ->
@@ -267,7 +263,7 @@ class MainActivity : AppCompatActivity() {
                 if (code.isEmpty()) {
                     Toast.makeText(this, "取件码不能为空", Toast.LENGTH_SHORT).show(); return@setPositiveButton
                 }
-                PackageStore.add(this, Package(
+                inbox.add(Package(
                     id = System.currentTimeMillis(),
                     pickupCode = code,
                     location = etLoc.text.toString().trim(),
@@ -287,15 +283,15 @@ class MainActivity : AppCompatActivity() {
             setPadding(48, 24, 48, 24)
             minLines = 3
         }
-        AlertDialog.Builder(this)
+        FrostedDialogBuilder(this)
             .setTitle("粘贴短信自动解析")
             .setView(et)
             .setPositiveButton("解析并添加") { _, _ ->
-                val r = SmsParser.parse(et.text.toString())
+                val r = SmsRules.parse(this, et.text.toString())
                 if (r == null) {
                     Toast.makeText(this, "未识别到取件码，请检查短信内容", Toast.LENGTH_SHORT).show()
                 } else {
-                    PackageStore.add(this, Package(
+                    inbox.add(Package(
                         id = System.currentTimeMillis(),
                         pickupCode = r.pickupCode,
                         location = r.location,
@@ -338,7 +334,7 @@ class MainActivity : AppCompatActivity() {
             container.addView(row)
         }
         val scroll = ScrollView(this).apply { addView(container) }
-        AlertDialog.Builder(this)
+        FrostedDialogBuilder(this)
             .setTitle("地址管理（重命名取件点）")
             .setView(scroll)
             .setPositiveButton("完成", null)
@@ -350,17 +346,17 @@ class MainActivity : AppCompatActivity() {
             setText(PackageStore.displayName(loc, aliases))
             setPadding(48, 24, 48, 24)
         }
-        AlertDialog.Builder(this)
+        FrostedDialogBuilder(this)
             .setTitle("重命名取件点")
             .setMessage("原名称：$loc")
             .setView(et)
             .setPositiveButton("保存") { _, _ ->
-                PackageStore.saveAlias(this, loc, et.text.toString().trim())
+                inbox.saveAlias(loc, et.text.toString().trim())
                 reload()
                 Toast.makeText(this, "已重命名", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("清除别名") { _, _ ->
-                PackageStore.saveAlias(this, loc, "")
+                inbox.saveAlias(loc, "")
                 reload()
             }
             .setNeutralButton("取消", null)
@@ -402,113 +398,226 @@ class MainActivity : AppCompatActivity() {
     private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
 
     /** 动态生成跳转区：数量 ≤4 用 2 列，>4 用 3 列 + 底部「添加应用」 */
-    private fun rebuildJumpGrid() {
-        val container = findViewById<LinearLayout>(R.id.jump_container)
-        container.removeAllViews()
+    private fun setupDeck(pages: List<View>) {
+        val pageViews = DashboardPage.entries.zip(pages).toMap()
+        fun attachCards() {
+            val order = navigationOrder[NavigationArea.CARDS]
+            deck.adapter = DashboardDeckAdapter(order.map(pageViews::getValue))
+            order.forEachIndexed { index, page ->
+                pageViews.getValue(page).findViewById<DeckScrollHost>(R.id.deck_scroll_host)?.onSwipeDownAtTop =
+                    if (index == 0) null else {
+                        {
+                            if (currentDashboardPage() == page) openPage(order[index - 1])
+                        }
+                    }
+            }
+        }
+        attachCards()
+        deck.offscreenPageLimit = 1
+        deck.getChildAt(0)?.overScrollMode = View.OVER_SCROLL_NEVER
+        deck.setPageTransformer { page, position ->
+            val distance = kotlin.math.abs(position).coerceAtMost(1f)
+            page.translationY = dp(8) * position
+            page.scaleX = 1f - 0.06f * distance
+            page.scaleY = 1f - 0.04f * distance
+            page.alpha = 1f - 0.2f * distance
+        }
 
-        val items = Settings.loadJumpApps(this)
-
-        // 数量 ≤4 用 2 列；>4 用 3 列（一排最多 3 个）
-        val cols = if (items.size <= 4) 2 else 3
-        val gap = dp(8)
-        val available = resources.displayMetrics.widthPixels - dp(24)
-        val cell = (available - gap * (cols - 1)) / cols
-        if (cell <= 0) return
-
-        var i = 0
-        while (i < items.size) {
-            val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-            row.layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply { bottomMargin = gap }
-
-            for (j in 0 until cols) {
-                val lp = LinearLayout.LayoutParams(0, cell, 1f)
-                if (j > 0) lp.marginStart = gap
-                if (i + j < items.size) {
-                    val (name, pkg) = items[i + j]
-                    row.addView(makeTile(name, pkg), lp)
-                } else {
-                    row.addView(View(this), lp)
+        val bottomBar = findViewById<LinearLayout>(R.id.deck_navigation)
+        val homeButton = findViewById<View>(R.id.deck_home)
+        val tabs = DashboardPage.entries.associateWith { destination ->
+            findViewById<MaterialButton>(destination.tabId).apply {
+                isCheckable = true
+                setOnClickListener {
+                    isChecked = true
+                    openPage(destination)
                 }
+            }
+        }
+        homeButton.setOnClickListener { goHome() }
+        val drawer = findViewById<DrawerLayout>(R.id.directory_drawer)
+        val directory = findViewById<LinearLayout>(R.id.directory_items)
+        val directoryLinks = findViewById<LinearLayout>(R.id.directory_links)
+        val header = PageControls(this, findViewById(R.id.directory_header))
+        val strongColor = android.graphics.Color.rgb(24, 43, 69)
+        header.heading(getString(R.string.app_name)).setTextColor(strongColor)
+        val version = packageManager.getPackageInfo(packageName, 0).versionName.orEmpty()
+        header.text(getString(R.string.home_subtitle, version)).setTextColor(strongColor)
+        header.heading("目录").setTextColor(strongColor)
+        val directoryButtons = DashboardPage.entries.associateWith { destination ->
+            MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+                text = destination.title
+                gravity = Gravity.START or Gravity.CENTER_VERTICAL
+                iconGravity = MaterialButton.ICON_GRAVITY_START
+                iconPadding = dp(12)
+                setIconResource(destination.drawerIcon)
+                iconTint = android.content.res.ColorStateList.valueOf(strongColor)
+                minHeight = dp(52)
+                setTextColor(strongColor)
+                strokeColor = android.content.res.ColorStateList.valueOf(android.graphics.Color.rgb(171, 193, 221))
+                setOnClickListener {
+                    drawer.closeDrawer(directory)
+                    openPage(destination)
+                }
+            }
+        }
+
+        fun renderMenus() {
+            bottomBar.removeAllViews()
+            navigationOrder[NavigationArea.BOTTOM].forEachIndexed { index, page ->
+                if (index == 2) bottomBar.addView(homeButton)
+                bottomBar.addView(tabs.getValue(page))
+            }
+            directoryLinks.removeAllViews()
+            navigationOrder[NavigationArea.DIRECTORY].forEach { page ->
+                directoryLinks.addView(directoryButtons.getValue(page), LinearLayout.LayoutParams(-1, -2))
+            }
+        }
+
+        fun updateNavigation() {
+            val active = currentDashboardPage()
+            tabs.forEach { (page, button) -> button.isChecked = page == active }
+            directoryButtons.forEach { (page, button) ->
+                val selected = page == active
+                button.isSelected = selected
+                button.strokeWidth = dp(if (selected) 2 else 1)
+                button.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                    if (selected) android.graphics.Color.rgb(218, 233, 253)
+                    else android.graphics.Color.rgb(248, 251, 255)
+                )
+            }
+        }
+
+        findViewById<View>(R.id.edit_navigation).setOnClickListener {
+            NavigationOrderEditor(this).show(navigationOrder) { updated ->
+                val current = currentDashboardPage()
+                val cardsChanged = navigationOrder[NavigationArea.CARDS] != updated[NavigationArea.CARDS]
+                navigationOrder = updated
+                updated.save(this)
+                if (cardsChanged) {
+                    attachCards()
+                    openPage(current, animate = false)
+                }
+                renderMenus()
+                updateNavigation()
+            }
+        }
+        findViewById<View>(R.id.btn_directory).setOnClickListener { drawer.openDrawer(directory) }
+        onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                when {
+                    visuals.dismissSplash() -> Unit
+                    drawer.isDrawerOpen(directory) -> drawer.closeDrawer(directory)
+                    currentDashboardPage() != DashboardPage.PACKAGES -> openPage(DashboardPage.PACKAGES)
+                    else -> {
+                        isEnabled = false
+                        onBackPressedDispatcher.onBackPressed()
+                        isEnabled = true
+                    }
+                }
+            }
+        })
+        deck.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                updateNavigation()
+                if (currentDashboardPage() != DashboardPage.SHORTCUTS && deleteMode) {
+                    deleteMode = false
+                    refreshShortcutEdit()
+                }
+            }
+        })
+        renderMenus()
+        updateNavigation()
+    }
+
+    private fun currentDashboardPage(): DashboardPage =
+        navigationOrder[NavigationArea.CARDS][deck.currentItem]
+
+    private fun openPage(destination: DashboardPage, animate: Boolean = true) {
+        deck.setCurrentItem(navigationOrder[NavigationArea.CARDS].indexOf(destination), animate)
+    }
+
+    private fun goHome() {
+        openPage(Settings.homePage(this))
+    }
+
+    private class DashboardDeckAdapter(private val pages: List<View>) :
+        RecyclerView.Adapter<DashboardDeckAdapter.PageHolder>() {
+
+        class PageHolder(val frame: FrameLayout) : RecyclerView.ViewHolder(frame)
+
+        override fun getItemCount(): Int = pages.size
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PageHolder =
+            PageHolder(FrameLayout(parent.context).apply {
+                layoutParams = RecyclerView.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+                )
+            })
+
+        override fun onBindViewHolder(holder: PageHolder, position: Int) {
+            holder.frame.removeAllViews()
+            val page = pages[position]
+            (page.parent as? ViewGroup)?.removeView(page)
+            holder.frame.addView(page, FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+            ))
+        }
+    }
+
+    private fun refreshShortcutEdit() {
+        shortcutsPage.findViewById<MaterialButton>(R.id.btn_edit_jump).text = if (deleteMode) "完成" else "编辑"
+        rebuildJumpGrid()
+    }
+
+    private fun rebuildJumpGrid() {
+        val container = shortcutsPage.findViewById<LinearLayout>(R.id.jump_container)
+        container.removeAllViews()
+        val columns = if (resources.configuration.screenWidthDp >= 480) 3 else 2
+        val tiles = Settings.loadJumpApps(this).map { (name, pkg) ->
+            MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+                text = if (deleteMode) "移除 $name" else name
+                maxLines = 1
+                ellipsize = android.text.TextUtils.TruncateAt.END
+                setOnClickListener {
+                    if (deleteMode) {
+                        FrostedDialogBuilder(this@MainActivity)
+                            .setMessage("从快捷应用移除「$name」？")
+                            .setPositiveButton("移除") { _, _ ->
+                                Settings.removeJumpApp(this@MainActivity, pkg)
+                                rebuildJumpGrid()
+                            }
+                            .setNegativeButton("取消", null)
+                            .show()
+                    } else {
+                        onPlatformClick(pkg, name)
+                    }
+                }
+            }
+        }.toMutableList()
+        if (!deleteMode) {
+            tiles += MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+                text = "添加应用"
+                setOnClickListener { showAppPicker() }
+            }
+        }
+        tiles.chunked(columns).forEach { items ->
+            val row = LinearLayout(this)
+            repeat(columns) { column ->
+                val params = LinearLayout.LayoutParams(0, dp(48), 1f).apply {
+                    if (column > 0) marginStart = dp(8)
+                }
+                row.addView(items.getOrNull(column) ?: View(this), params)
             }
             container.addView(row)
-            i += cols
         }
 
-        val addBtn = MaterialButton(this).apply {
-            text = "＋ 添加应用"
-            textSize = 14f
-            setTypeface(null, Typeface.BOLD)
-            setTextColor(0xFF3B6EF7.toInt())
-            backgroundTintList = ColorStateList.valueOf(0xFFF2F4F8.toInt())
-            strokeColor = ColorStateList.valueOf(0xFF3B6EF7.toInt())
-            strokeWidth = dp(2)
-            cornerRadius = dp(12)
-            elevation = dp(2).toFloat()
-            setOnClickListener { showAppPicker() }
-        }
-        container.addView(addBtn, LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT, dp(56)
-        ))
-    }
-
-    /** 单个应用方块；删除模式下右上角显示 × */
-    private fun makeTile(name: String, pkg: String): FrameLayout {
-        val frame = FrameLayout(this)
-        val btn = makePlatformButton(name) {
-            if (!deleteMode) onPlatformClick(pkg, name)
-        }
-        frame.addView(btn, FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.MATCH_PARENT
-        ))
-        if (deleteMode) {
-            val del = TextView(this).apply {
-                text = "×"
-                textSize = 13f
-                setTextColor(Color.WHITE)
-                gravity = Gravity.CENTER
-                background = GradientDrawable().apply {
-                    shape = GradientDrawable.OVAL
-                    setColor(Color.parseColor("#EF4444"))
-                }
-                setOnClickListener {
-                    Settings.removeJumpApp(this@MainActivity, pkg)
-                    Toast.makeText(this@MainActivity, "已删除：$name", Toast.LENGTH_SHORT).show()
-                    rebuildJumpGrid()
-                }
-            }
-            val lp = FrameLayout.LayoutParams(dp(22), dp(22)).apply {
-                gravity = Gravity.TOP or Gravity.END
-                topMargin = dp(2)
-                rightMargin = dp(2)
-            }
-            frame.addView(del, lp)
-        }
-        return frame
-    }
-
-    private fun makePlatformButton(name: String, onClick: () -> Unit): MaterialButton {
-        return MaterialButton(this).apply {
-            text = name
-            textSize = 14f
-            setTypeface(null, Typeface.BOLD)
-            setTextColor(0xFF3B6EF7.toInt())
-            backgroundTintList = ColorStateList.valueOf(0xFFF2F4F8.toInt())
-            strokeColor = ColorStateList.valueOf(0xFF3B6EF7.toInt())
-            strokeWidth = dp(2)
-            cornerRadius = dp(12)
-            elevation = dp(2).toFloat()
-            setOnClickListener { onClick() }
-        }
     }
 
     /** 点平台按钮：淘宝弹「启动 / 身份码」二选一，其它直接启动 */
     private fun onPlatformClick(pkg: String, name: String) {
         if (pkg == "com.taobao.taobao") {
-            AlertDialog.Builder(this)
+            FrostedDialogBuilder(this)
                 .setTitle("淘宝")
                 .setItems(arrayOf("启动淘宝", "身份码")) { _, which ->
                     if (which == 0) launchApp(pkg, name) else openIdentityCode()
@@ -545,7 +654,7 @@ class MainActivity : AppCompatActivity() {
         view.addView(search)
         view.addView(listView)
 
-        val dialog = AlertDialog.Builder(this)
+        val dialog = FrostedDialogBuilder(this)
             .setTitle("选择要添加的应用")
             .setView(view)
             .setNegativeButton("取消", null)
@@ -580,7 +689,7 @@ class MainActivity : AppCompatActivity() {
             setText(defaultName)
             setSelection(defaultName.length)
         }
-        AlertDialog.Builder(this)
+        FrostedDialogBuilder(this)
             .setTitle("确认应用名称")
             .setMessage("已链接：$pkg")
             .setView(et)
@@ -594,168 +703,15 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    // ---------- 权限与超期检查 ----------
-    private fun requestSmsPermission() {
-        val perms = mutableListOf(Manifest.permission.READ_SMS, Manifest.permission.RECEIVE_SMS)
-        if (android.os.Build.VERSION.SDK_INT >= 33) {
-            perms.add(Manifest.permission.POST_NOTIFICATIONS)
-        }
-        val missing = perms.filter {
-            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
-        }
-        if (missing.isNotEmpty()) {
-            ActivityCompat.requestPermissions(this, missing.toTypedArray(), 100)
-        }
+    private fun chooseThemePhoto(slot: AppVisuals.Slot) {
+        photoSlot = slot
+        themePicker.launch(androidx.activity.result.PickVisualMediaRequest(
+            ActivityResultContracts.PickVisualMedia.ImageOnly
+        ))
     }
 
-    private fun scheduleDailyOverdueCheck() {
-        try {
-            val am = getSystemService(ALARM_SERVICE) as AlarmManager
-            val intent = Intent(this, OverdueReceiver::class.java)
-            val pi = PendingIntent.getBroadcast(
-                this, 1, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            am.setInexactRepeating(
-                AlarmManager.RTC_WAKEUP,
-                System.currentTimeMillis() + 3600000L,
-                AlarmManager.INTERVAL_DAY,
-                pi
-            )
-        } catch (_: Exception) {}
-    }
-
-    // ---------- 图片识别 ----------
-    private fun showImageSourceDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("图片识别快递")
-            .setItems(arrayOf("从相册选择", "拍照")) { _, which ->
-                if (which == 0) {
-                    galleryLauncher.launch(
-                        androidx.activity.result.PickVisualMediaRequest(
-                            ActivityResultContracts.PickVisualMedia.ImageOnly
-                        )
-                    )
-                } else {
-                    takePhoto()
-                }
-            }
-            .show()
-    }
-
-    private fun takePhoto() {
-        try {
-            val photoFile = File.createTempFile("kuaidi_", ".jpg", cacheDir)
-            currentPhotoUri = FileProvider.getUriForFile(this, "$packageName.fileprovider", photoFile)
-            cameraLauncher.launch(currentPhotoUri)
-        } catch (e: Exception) {
-            Toast.makeText(this, "无法启动相机：${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun recognizeImage(uri: Uri) {
-        Toast.makeText(this, "正在识别…", Toast.LENGTH_SHORT).show()
-        try {
-            val image = InputImage.fromFilePath(this, uri)
-            val recognizer = TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
-            recognizer.process(image)
-                .addOnSuccessListener { result ->
-                    val r = SmsParser.parse(result.text)
-                    if (r == null) {
-                        showRawOcrDialog(result.text)
-                    } else {
-                        showRecognitionResultDialog(r)
-                    }
-                }
-                .addOnFailureListener { e ->
-                    Toast.makeText(this, "识别失败：${e.message}", Toast.LENGTH_SHORT).show()
-                }
-        } catch (e: Exception) {
-            Toast.makeText(this, "识别出错：${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    /** 识别成功：预览可编辑，确认后再入库 */
-    private fun showRecognitionResultDialog(r: SmsParser.Result) {
-        val v = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(48, 24, 48, 24)
-        }
-        val etCode = EditText(this).apply { setText(r.pickupCode); hint = "取件码" }
-        val etLoc = EditText(this).apply { setText(r.location); hint = "取件点" }
-        val etAddr = EditText(this).apply { setText(r.address); hint = "详细地址" }
-        val etCarrier = EditText(this).apply { setText(r.carrier); hint = "快递公司" }
-        v.addView(etCode); v.addView(etLoc); v.addView(etAddr); v.addView(etCarrier)
-
-        AlertDialog.Builder(this)
-            .setTitle("识别结果 · 请核对修改")
-            .setView(v)
-            .setPositiveButton("确认入库") { _, _ ->
-                val code = etCode.text.toString().trim()
-                if (code.isEmpty()) {
-                    Toast.makeText(this, "取件码不能为空", Toast.LENGTH_SHORT).show()
-                } else {
-                    PackageStore.add(this, Package(
-                        id = System.currentTimeMillis(),
-                        pickupCode = code,
-                        location = etLoc.text.toString().trim(),
-                        address = etAddr.text.toString().trim(),
-                        carrier = etCarrier.text.toString().trim(),
-                        arriveTime = System.currentTimeMillis()
-                    ))
-                    reload()
-                    Toast.makeText(this, "已入库：取件码 $code", Toast.LENGTH_SHORT).show()
-                }
-            }
-            .setNegativeButton("取消", null)
-            .show()
-    }
-
-    /** 识别失败：展示 OCR 原文，方便手动提取取件码 */
-    private fun showRawOcrDialog(rawText: String) {
-        val et = EditText(this).apply {
-            setText(rawText)
-            minLines = 4
-            setPadding(48, 24, 48, 24)
-            hint = "未解析到取件码，下面是识别出的原文"
-        }
-        AlertDialog.Builder(this)
-            .setTitle("识别原文（未解析到取件码）")
-            .setView(et)
-            .setPositiveButton("关闭", null)
-            .show()
-    }
-
-    // ---------- 高级设置 ----------
-    private fun showSettingsDialog() {
-        val daysList = listOf(3, 4, 5, 7)
-        val v = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(48, 24, 48, 24)
-        }
-        val cb = CheckBox(this).apply {
-            text = "点击取件（标记已取）时自动打开淘宝身份码"
-            isChecked = Settings.getOpenIdentityOnPickup(this@MainActivity)
-        }
-        v.addView(cb)
-        val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, 16, 0, 0) }
-        val label = TextView(this).apply { text = "超期提醒天数：" }
-        val sp = Spinner(this).apply {
-            adapter = ArrayAdapter(this@MainActivity, android.R.layout.simple_spinner_item, listOf("3 天", "4 天", "5 天", "7 天"))
-            setSelection(daysList.indexOf(Settings.getOverdueDays(this@MainActivity)).coerceAtLeast(0))
-        }
-        row.addView(label); row.addView(sp)
-        v.addView(row)
-
-        AlertDialog.Builder(this)
-            .setTitle("高级设置")
-            .setView(v)
-            .setPositiveButton("保存") { _, _ ->
-                Settings.setOpenIdentityOnPickup(this, cb.isChecked)
-                Settings.setOverdueDays(this, daysList[sp.selectedItemPosition])
-                Toast.makeText(this, "已保存", Toast.LENGTH_SHORT).show()
-            }
-            .setNegativeButton("取消", null)
-            .show()
+    override fun onDestroy() {
+        visuals.close()
+        super.onDestroy()
     }
 }

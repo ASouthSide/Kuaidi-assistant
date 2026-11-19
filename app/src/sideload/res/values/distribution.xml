@@ -1,0 +1,4 @@
+<resources>
+    <string name="home_subtitle">自动识别快递短信 · 取件管理 · %1$s</string>
+    <string name="empty_inbox">暂无快件\n\n收到快递短信会自动识别入库\n也可点「粘贴短信」或「图片识别」</string>
+</resources>

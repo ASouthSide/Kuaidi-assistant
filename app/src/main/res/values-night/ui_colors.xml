@@ -1,0 +1,23 @@
+<resources>
+    <color name="ui_background">#101722</color>
+    <color name="ui_surface">#192333</color>
+    <color name="ui_text">#EBF1FB</color>
+    <color name="ui_muted">#B0BED2</color>
+    <color name="ui_line">#39475D</color>
+    <color name="ui_accent">#A9C7FF</color>
+    <color name="ui_pending">#FFBC89</color>
+    <color name="ui_done">#9BE4C0</color>
+    <bool name="ui_light_system_icons_background">false</bool>
+    <color name="ui_stack_back">#253553</color>
+    <color name="ui_stack_middle">#202D44</color>
+    <color name="glass_start">#ED27364B</color>
+    <color name="glass_center">#E5223044</color>
+    <color name="glass_end">#F21A2536</color>
+    <color name="glass_edge">#92617999</color>
+    <color name="glass_inner_start">#E7314157</color>
+    <color name="glass_inner_end">#EB243146</color>
+    <color name="glass_dialog_start">#FC27364C</color>
+    <color name="glass_dialog_end">#FA192437</color>
+    <color name="glass_canvas_start">#162235</color>
+    <color name="glass_canvas_end">#101827</color>
+</resources>

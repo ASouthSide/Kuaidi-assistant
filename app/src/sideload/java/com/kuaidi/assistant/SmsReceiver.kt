@@ -14,10 +14,9 @@ class SmsReceiver : BroadcastReceiver() {
         if (intent.action != Telephony.Sms.Intents.SMS_RECEIVED_ACTION) return
 
         val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
-        for (msg in messages) {
-            val body = msg.messageBody ?: continue
-            if (!SmsParser.isExpressSms(body)) continue
-            val r = SmsParser.parse(body) ?: continue
+        for (parts in messages.groupBy { it.originatingAddress }) {
+            val body = parts.value.joinToString("") { it.messageBody.orEmpty() }
+            val r = SmsRules.parse(context, body) ?: continue
 
             val pkg = Package(
                 id = System.currentTimeMillis(),

@@ -13,6 +13,14 @@ object SmsParser {
         val address: String = ""
     )
 
+    class Rules(labels: List<String>, aliases: Map<String, String>) {
+        internal val code = labels.takeIf { it.isNotEmpty() }?.let { words ->
+            val prefix = words.sortedByDescending { it.length }.joinToString("|") { Regex.escape(it) }
+            Regex("(?:$prefix)\\s*[:：为是]?\\s*([0-9A-Za-z]{1,4}[-—][0-9A-Za-z]{1,4}(?:[-—][0-9A-Za-z]{1,6})?|[0-9A-Za-z]{4,12})(?![0-9A-Za-z—-])")
+        }
+        internal val carriers = aliases.toList().sortedByDescending { it.first.length }
+    }
+
     private val CARRIERS = listOf(
         "顺丰", "中通", "圆通", "申通", "韵达", "极兔", "京东", "邮政", "EMS",
         "百世", "德邦", "菜鸟", "丹鸟", "天猫", "丰网", "多多", "壹米滴答", "安能"
@@ -48,19 +56,21 @@ object SmsParser {
                 (body.contains("凭") && (body.contains("-") || body.contains(Regex("\\d"))))
     }
 
-    fun parse(body: String): Result? {
-        if (!isExpressSms(body)) return null
+    fun parse(body: String, rules: Rules? = null): Result? {
 
         val full = body
         // 去掉【发送方】前缀，避免误判为取件点
         val s = body.replace(Regex("^【[^】]*】"), "")
 
-        val code = CODE_KEYWORD.find(s)?.groupValues?.get(1)
+        val explicitCode = rules?.code?.find(s)?.groupValues?.get(1)
+            ?: CODE_KEYWORD.find(s)?.groupValues?.get(1)
             ?: CODE_KEYWORD2.find(s)?.groupValues?.get(1)
-            ?: CODE_PING.find(s)?.groupValues?.get(1)
+        val code = explicitCode ?: if (isExpressSms(body)) {
+            CODE_PING.find(s)?.groupValues?.get(1)
             ?: CODE_PING2.find(s)?.groupValues?.get(1)
             ?: CODE_DASH.find(s)?.groupValues?.get(1)
-            ?: return null
+        } else null
+        if (code == null) return null
 
         val location = LOCATION_ARRIVE.find(s)?.groupValues?.get(1)
             ?: LOCATION_DAO.find(s)?.groupValues?.get(1)
@@ -69,7 +79,7 @@ object SmsParser {
 
         val address = ADDRESS_REGEX.find(s)?.groupValues?.get(1) ?: ""
 
-        val carrier = when {
+        val carrier = rules?.carriers?.firstOrNull { full.contains(it.first) }?.second ?: when {
             full.contains("兔喜") -> "中通"   // 兔喜生活/兔喜快递柜归属中通
             else -> CARRIERS.firstOrNull { full.contains(it) } ?: ""
         }

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/packages_card"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/bg_section_stack"
+    android:paddingTop="3dp"
+    android:paddingBottom="10dp">
+    <LinearLayout android:id="@+id/intake_actions" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:paddingHorizontal="12dp" android:paddingTop="4dp" android:paddingBottom="4dp">
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_paste" style="@style/Widget.Material3.Button.TonalButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:textSize="13sp" android:text="粘贴短信" android:layout_marginEnd="8dp"/>
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_image" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:textSize="13sp" android:text="图片识别" android:layout_marginEnd="8dp"/>
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_add" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:textSize="13sp" android:text="手动添加" />
+    </LinearLayout>
+    <LinearLayout android:id="@+id/header_packages" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:minHeight="48dp" android:paddingStart="14dp" android:paddingEnd="10dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="取件列表" android:textColor="@color/ui_text" android:textSize="17sp" android:textStyle="bold" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="" android:textColor="@color/ui_muted" android:textSize="12sp" android:id="@+id/tv_count" android:layout_marginStart="9dp"/>
+        <Space android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/btn_addr_mgr" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="48dp" android:minWidth="48dp" android:text="地址管理" />
+    </LinearLayout>
+    <LinearLayout android:id="@+id/content_packages" android:layout_width="match_parent"
+        android:layout_height="0dp" android:layout_weight="1" android:orientation="vertical">
+        <com.google.android.material.button.MaterialButtonToggleGroup android:id="@+id/status_filter"
+            android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginHorizontal="12dp" android:layout_marginBottom="6dp"
+            app:singleSelection="true" app:selectionRequired="true" app:checkedButton="@+id/status_all">
+            <com.google.android.material.button.MaterialButton android:id="@+id/status_all" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:textSize="13sp" android:text="全部" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/status_pending" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:textSize="13sp" android:text="待取" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/status_picked" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="48dp" android:textSize="13sp" android:text="已取" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:paddingStart="12dp" android:paddingEnd="6dp" android:paddingBottom="8dp">
+            <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:layout_marginEnd="6dp" android:orientation="vertical" android:background="@drawable/bg_filter" android:paddingStart="10dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="日期" android:textColor="@color/ui_muted" android:textSize="12sp" android:layout_marginTop="4dp"/>
+        <Spinner android:spinnerMode="dropdown" android:popupBackground="@drawable/bg_dialog_frosted" android:id="@+id/spinner_date" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="36dp" android:contentDescription="日期" />
+    </LinearLayout>
+            <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:layout_marginEnd="6dp" android:orientation="vertical" android:background="@drawable/bg_filter" android:paddingStart="10dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="快递" android:textColor="@color/ui_muted" android:textSize="12sp" android:layout_marginTop="4dp"/>
+        <Spinner android:spinnerMode="dropdown" android:popupBackground="@drawable/bg_dialog_frosted" android:id="@+id/spinner_carrier" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="36dp" android:contentDescription="快递" />
+    </LinearLayout>
+            <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:layout_marginEnd="6dp" android:orientation="vertical" android:background="@drawable/bg_filter" android:paddingStart="10dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="取件点" android:textColor="@color/ui_muted" android:textSize="12sp" android:layout_marginTop="4dp"/>
+        <Spinner android:spinnerMode="dropdown" android:popupBackground="@drawable/bg_dialog_frosted" android:id="@+id/spinner_addr" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="36dp" android:contentDescription="取件点" />
+    </LinearLayout>
+        </LinearLayout>
+        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+            <com.kuaidi.assistant.DeckScrollHost android:id="@+id/deck_scroll_host"
+                android:layout_width="match_parent" android:layout_height="match_parent">
+                <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_packages"
+                    android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:clipToPadding="false" android:paddingBottom="12dp" />
+            </com.kuaidi.assistant.DeckScrollHost>
+            <TextView android:id="@+id/tv_empty" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_gravity="center"
+                android:gravity="center" android:padding="24dp" android:text="@string/empty_inbox"
+                android:textColor="@color/ui_muted" android:textSize="14sp" android:visibility="gone" />
+        </FrameLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -28,22 +28,29 @@ object PackageStore {
         prefs(ctx).edit().putString(KEY, arr.toString()).apply()
     }
 
+    @Synchronized
     fun add(ctx: Context, pkg: Package) {
         val list = load(ctx)
-        list.add(0, pkg)  // 最新在最前
+        var id = pkg.id
+        val existingIds = list.mapTo(HashSet()) { it.id }
+        while (id in existingIds) id++
+        list.add(0, if (id == pkg.id) pkg else pkg.copy(id = id))
         save(ctx, list)
     }
 
+    @Synchronized
     fun update(ctx: Context, pkg: Package) {
         val list = load(ctx)
         val i = list.indexOfFirst { it.id == pkg.id }
         if (i >= 0) { list[i] = pkg; save(ctx, list) }
     }
 
+    @Synchronized
     fun remove(ctx: Context, id: Long) {
         save(ctx, load(ctx).filterNot { it.id == id })
     }
 
+    @Synchronized
     fun markPicked(ctx: Context, id: Long) {
         val list = load(ctx)
         val i = list.indexOfFirst { it.id == id }
@@ -53,6 +60,7 @@ object PackageStore {
         }
     }
 
+    @Synchronized
     fun togglePicked(ctx: Context, id: Long) {
         val list = load(ctx)
         val i = list.indexOfFirst { it.id == id }
@@ -77,6 +85,7 @@ object PackageStore {
         }
     }
 
+    @Synchronized
     fun saveAlias(ctx: Context, original: String, alias: String) {
         val map = loadAliases(ctx)
         if (alias.isBlank()) map.remove(original) else map[original] = alias
