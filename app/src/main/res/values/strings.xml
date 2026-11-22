@@ -3,4 +3,8 @@
     <string name="empty_filtered">没有符合筛选条件的快件</string>
     <string name="splash_skip">跳过</string>
     <string name="splash_app_info">取件管理 · %1$s</string>
+    <string name="launcher_identity_code">淘宝身份码</string>
+    <string name="launcher_image_pickup">图片识别</string>
+    <string name="launcher_quick_apps">快捷跳转</string>
+    <string name="launcher_manual_add">手动添加</string>
 </resources>

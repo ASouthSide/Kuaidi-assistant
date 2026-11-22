@@ -26,6 +26,7 @@ object PackageStore {
         val arr = JSONArray()
         list.forEach { arr.put(it.toJson()) }
         prefs(ctx).edit().putString(KEY, arr.toString()).apply()
+        PickupNotification.refresh(ctx, list)
     }
 
     @Synchronized
@@ -51,13 +52,14 @@ object PackageStore {
     }
 
     @Synchronized
-    fun markPicked(ctx: Context, id: Long) {
+    fun markPicked(ctx: Context, id: Long): Package? {
         val list = load(ctx)
-        val i = list.indexOfFirst { it.id == id }
-        if (i >= 0) {
-            list[i] = list[i].copy(picked = true, pickedTime = System.currentTimeMillis())
-            save(ctx, list)
-        }
+        val i = list.indexOfFirst { it.id == id && !it.picked }
+        if (i < 0) return null
+        val picked = list[i].copy(picked = true, pickedTime = System.currentTimeMillis())
+        list[i] = picked
+        save(ctx, list)
+        return picked
     }
 
     @Synchronized
@@ -92,6 +94,7 @@ object PackageStore {
         val obj = JSONObject()
         map.forEach { (k, v) -> obj.put(k, v) }
         prefs(ctx).edit().putString(KEY_ALIASES, obj.toString()).apply()
+        PickupNotification.refresh(ctx)
     }
 
     fun displayName(original: String, aliases: Map<String, String>): String =

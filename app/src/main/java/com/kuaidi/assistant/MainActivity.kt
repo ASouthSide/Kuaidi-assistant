@@ -62,16 +62,21 @@ class MainActivity : AppCompatActivity() {
     private lateinit var navigationOrder: NavigationOrder
     private lateinit var preferencesPage: PreferencesPage
     private lateinit var visuals: AppVisuals
+    private var pendingLauncherShortcut: LauncherShortcut? = null
     private var photoSlot = AppVisuals.Slot.BACKGROUND
     private val themePicker = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         uri?.let { visuals.savePhoto(photoSlot, it) }
     }
     private val permissionRequest = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
         preferencesPage.refreshPermissions()
+        PickupNotification.refresh(this)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        pendingLauncherShortcut = LauncherShortcut.fromAction(
+            if (savedInstanceState == null) intent.action else savedInstanceState.getString("pending_launcher_shortcut")
+        )
         setContentView(R.layout.activity_main)
         deck = findViewById(R.id.dashboard_deck)
         navigationOrder = NavigationOrder.load(this)
@@ -91,7 +96,7 @@ class MainActivity : AppCompatActivity() {
         val glassPanels = pages.map { FrostedPanelBackground(it, visuals.wallpaperView, dp(24), dp(7)) }
         visuals.onWallpaperTexture = { texture -> glassPanels.forEach { it.setTexture(texture) } }
         setupDeck(pages)
-        visuals.show(savedInstanceState == null)
+        visuals.show(savedInstanceState == null && pendingLauncherShortcut == null)
         imagePickup.restore(savedInstanceState)
 
         emptyView = packagesPage.findViewById(R.id.tv_empty)
@@ -143,6 +148,7 @@ class MainActivity : AppCompatActivity() {
         outState.putInt("package_status", statusFilter.checkedButtonId)
         outState.putStringArrayList("open_pickup_groups", ArrayList(toggledPickupRows))
         outState.putString("photo_slot", photoSlot.name)
+        outState.putString("pending_launcher_shortcut", pendingLauncherShortcut?.action)
         imagePickup.save(outState)
         super.onSaveInstanceState(outState)
     }
@@ -151,7 +157,30 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         reload()
         preferencesPage.refreshPermissions()
+        PickupNotification.refresh(this)
         OverdueReceiver.checkAndNotify(this)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        pendingLauncherShortcut = LauncherShortcut.fromAction(intent.action)
+    }
+
+    override fun onPostResume() {
+        super.onPostResume()
+        val shortcut = pendingLauncherShortcut ?: return
+        pendingLauncherShortcut = null
+        visuals.dismissSplash()
+        findViewById<DrawerLayout>(R.id.directory_drawer).closeDrawers()
+        openPage(shortcut.page, animate = false)
+        when (shortcut) {
+            LauncherShortcut.IDENTITY_CODE -> openIdentityCode()
+            LauncherShortcut.IMAGE_PICKUP -> imagePickup.showImageSourceDialog()
+            LauncherShortcut.QUICK_APPS -> Unit
+            LauncherShortcut.MANUAL_ADD -> showAddDialog()
+            LauncherShortcut.PENDING_PICKUPS -> showPendingPickups()
+        }
     }
 
     // ---------- 数据与筛选 ----------
@@ -365,24 +394,16 @@ class MainActivity : AppCompatActivity() {
 
     // ---------- 身份码 ----------
     private fun openIdentityCode() {
-        // 淘宝身份码链式启动（经实测可行的 URL Scheme）
-        val urlScheme = "taobao://m.taobao.com/tbopen/index.html?h5Url=https://pages-fast.m.taobao.com/wow/z/uniapp/1011717/last-mile-fe/end-collect-platform/identity-code"
-        try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(urlScheme))
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            if (intent.resolveActivity(packageManager) != null) {
-                startActivity(intent)
-                return
+        TaobaoIdentity.open(this)
+    }
+
+    private fun showPendingPickups() {
+        PickupsDialog.show(this) {
+            if (PackageStore.markPicked(this, it.id) != null) {
+                reload()
+                if (Settings.shouldOpenIdentity(this, it.location, it.address)) openIdentityCode()
             }
-        } catch (_: Exception) {}
-
-        // 兜底：启动淘宝 App 首页
-        try {
-            val launch = packageManager.getLaunchIntentForPackage("com.taobao.taobao")
-            if (launch != null) { startActivity(launch); return }
-        } catch (_: Exception) {}
-
-        Toast.makeText(this, "未检测到淘宝 App，请手动打开", Toast.LENGTH_SHORT).show()
+        }
     }
 
     // ---------- 多平台跳转 ----------

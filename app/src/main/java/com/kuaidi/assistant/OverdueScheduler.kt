@@ -24,6 +24,7 @@ class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED && Settings.restoreOnBoot(context)) {
             OverdueScheduler.schedule(context)
+            PickupNotification.refresh(context)
         }
     }
 }

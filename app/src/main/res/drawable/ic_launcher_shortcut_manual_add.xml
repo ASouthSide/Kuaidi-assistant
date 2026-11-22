@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/launcher_shortcut_background" />
+    <foreground>
+        <inset android:inset="27%">
+            <vector
+                android:width="24dp"
+                android:height="24dp"
+                android:viewportWidth="24"
+                android:viewportHeight="24">
+                <path
+                    android:pathData="M12,4 A8,8 0,1 1,12 20 A8,8 0,1 1,12 4 Z M12,8 V16 M8,12 H16"
+                    android:strokeColor="#244978"
+                    android:strokeWidth="1.7"
+                    android:strokeLineCap="round"
+                    android:strokeLineJoin="round" />
+            </vector>
+        </inset>
+    </foreground>
+</adaptive-icon>

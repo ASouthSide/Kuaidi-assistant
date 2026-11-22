@@ -4,4 +4,5 @@
     <color name="primary_dark">#2A56C8</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#1F2430</color>
+    <color name="launcher_shortcut_background">#E8F1FF</color>
 </resources>

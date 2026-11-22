@@ -16,6 +16,15 @@ class SmsParserTest {
         assertEquals("中通", result?.carrier)
     }
 
+    @Test fun keepsCampusNamesAndStreetDetailsAfterParentheses() {
+        val prefix = "兔喜生活】您有包裹已到达星河中通店，取件码为64-3-50218，地址:"
+        for (campus in listOf("(高新校区)", "（高新校区）")) {
+            val address = "星河学院" + campus + "体育场东门中通快递"
+            val message = prefix + address + "。请及时取件"
+            assertEquals(SmsParser.Result("64-3-50218", "星河中通店", "中通", address), SmsParser.parse(message))
+        }
+    }
+
     @Test fun recognisesImportedLabelsLiterally() {
         val rules = SmsParser.Rules(listOf("柜号(A)"), mapOf("星河配送" to "测试快递"))
         val sms = "【星河配送】柜号(A)：03B205"

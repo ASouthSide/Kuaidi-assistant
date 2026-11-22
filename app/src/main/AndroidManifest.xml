@@ -6,6 +6,7 @@
 
     <!-- Android 11+ 软件包可见性：声明需要查询/启动的外部应用与 URL Scheme -->
     <queries>
+        <provider android:authorities="miui.statusbar.notification.public" />
         <package android:name="com.taobao.taobao" />
         <package android:name="com.cainiao.wireless" />
         <package android:name="com.eg.android.AlipayGphone" />
@@ -49,12 +50,25 @@
 
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/launcher_shortcuts" />
         </activity>
+
+        <activity
+            android:name=".PickupNotificationActionActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.NoDisplay" />
+
+        <receiver
+            android:name=".PickupNotificationReceiver"
+            android:exported="false" />
 
         <receiver
             android:name=".OverdueReceiver"

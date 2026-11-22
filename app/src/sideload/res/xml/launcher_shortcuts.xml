@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="identity_code"
+        android:icon="@drawable/ic_launcher_shortcut_identity_code"
+        android:shortcutShortLabel="@string/launcher_identity_code">
+        <intent
+            android:action="com.kuaidi.assistant.action.OPEN_IDENTITY_CODE"
+            android:targetPackage="com.kuaidi.assistant"
+            android:targetClass="com.kuaidi.assistant.MainActivity" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="image_pickup"
+        android:icon="@drawable/ic_launcher_shortcut_image_pickup"
+        android:shortcutShortLabel="@string/launcher_image_pickup">
+        <intent
+            android:action="com.kuaidi.assistant.action.OPEN_IMAGE_PICKUP"
+            android:targetPackage="com.kuaidi.assistant"
+            android:targetClass="com.kuaidi.assistant.MainActivity" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="quick_apps"
+        android:icon="@drawable/ic_launcher_shortcut_quick_apps"
+        android:shortcutShortLabel="@string/launcher_quick_apps">
+        <intent
+            android:action="com.kuaidi.assistant.action.OPEN_QUICK_APPS"
+            android:targetPackage="com.kuaidi.assistant"
+            android:targetClass="com.kuaidi.assistant.MainActivity" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="manual_add"
+        android:icon="@drawable/ic_launcher_shortcut_manual_add"
+        android:shortcutShortLabel="@string/launcher_manual_add">
+        <intent
+            android:action="com.kuaidi.assistant.action.OPEN_MANUAL_ADD"
+            android:targetPackage="com.kuaidi.assistant"
+            android:targetClass="com.kuaidi.assistant.MainActivity" />
+    </shortcut>
+</shortcuts>

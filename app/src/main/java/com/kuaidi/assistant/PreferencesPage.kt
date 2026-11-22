@@ -71,6 +71,39 @@ internal class PreferencesPage(
             heading("权限与超期提醒")
             notificationStatus = text("")
             button("检查或开启通知权限") { openNotificationPermission() }
+            toggle("待取快递常驻通知", Settings.showPickupNotification(activity)) { enabled ->
+                Settings.setShowPickupNotification(activity, enabled)
+                if (enabled && !NotificationManagerCompat.from(activity).areNotificationsEnabled()) {
+                    openNotificationPermission()
+                }
+            }
+            text("优先显示最早到达的一件。若系统允许在锁屏展示私密通知，常驻卡片只显示件数，点击后可查看完整内容。")
+            button("待取通知与锁屏设置") {
+                PickupNotification.ensureChannel(activity.getSystemService(NotificationManager::class.java))
+                open(Intent(android.provider.Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
+                    .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, activity.packageName)
+                    .putExtra(android.provider.Settings.EXTRA_CHANNEL_ID, PickupNotification.CHANNEL))
+            }
+            if (XiaomiPickupIsland.supported(activity)) {
+                button("检查超级岛权限") {
+                    kotlin.concurrent.thread(name = "xiaomi-focus-permission") {
+                        val enabled = XiaomiPickupIsland.canShow(activity)
+                        activity.runOnUiThread {
+                            if (!activity.isDestroyed) {
+                                val message = if (enabled) {
+                                    "系统焦点通知开关已开启。超级岛还需要通过小米对应用包名和签名的授权校验。"
+                                } else {
+                                    "当前应用的系统焦点通知开关未开启，或系统暂未开放此能力。"
+                                }
+                                FrostedDialogBuilder(activity).setTitle("超级岛权限")
+                                    .setMessage(message)
+                                    .setPositiveButton("关闭", null)
+                                    .show()
+                            }
+                        }
+                    }
+                }
+            }
             val overdue = button(overdueLabel()) {}
             overdue.setOnClickListener {
                 askText("超期提醒天数", "输入 1–365 天", Settings.getOverdueDays(activity).toString(), true) { raw ->

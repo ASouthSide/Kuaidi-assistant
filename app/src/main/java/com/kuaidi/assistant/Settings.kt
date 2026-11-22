@@ -17,6 +17,7 @@ object Settings {
     fun setOpenIdentityOnPickup(ctx: Context, value: Boolean) {
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
             .putBoolean(KEY_OPEN_IDENTITY, value).apply()
+        PickupNotification.refresh(ctx)
     }
 
     internal fun homePage(ctx: Context): DashboardPage {
@@ -32,6 +33,15 @@ object Settings {
     fun restoreOnBoot(ctx: Context): Boolean =
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean("restore_on_boot", false)
 
+    fun showPickupNotification(ctx: Context): Boolean =
+        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean("show_pickup_notification", true)
+
+    fun setShowPickupNotification(ctx: Context, enabled: Boolean) {
+        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putBoolean("show_pickup_notification", enabled).apply()
+        PickupNotification.refresh(ctx)
+    }
+
     fun setRestoreOnBoot(ctx: Context, enabled: Boolean) {
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean("restore_on_boot", enabled).apply()
     }
@@ -44,6 +54,7 @@ object Settings {
         if (locations == null) editor.remove("identity_locations")
         else editor.putStringSet("identity_locations", locations)
         editor.apply()
+        PickupNotification.refresh(ctx)
     }
 
     fun shouldOpenIdentity(ctx: Context, location: String, address: String): Boolean =

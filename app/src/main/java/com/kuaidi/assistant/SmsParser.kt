@@ -47,7 +47,7 @@ object SmsParser {
     private val LOCATION_REGEX = Regex("($LOC{2,24}(?:驿站|快递柜|快递点|服务站|代收点|服务中心|自提点|门店|超市|便利店|取货点|服务点|店))")
 
     // 详细地址：地址: xxx
-    private val ADDRESS_REGEX = Regex("地址[:：]?\\s*($LOC{2,50})")
+    private val ADDRESS_REGEX = Regex("地址[:：]?\\s*((?:$LOC|[()（）]){2,50})")
 
     fun isExpressSms(body: String): Boolean {
         return body.contains("取件码") || body.contains("取货") || body.contains("提货") ||

@@ -24,11 +24,24 @@ object Notifier {
 
     fun notify(context: Context, title: String, text: String, id: Int, channel: String = CHANNEL_EXPRESS) {
         ensureChannels(context)
+        val notificationChannel = context.getSystemService(NotificationManager::class.java).getNotificationChannel(channel)
         val n = NotificationCompat.Builder(context, channel)
             .setSmallIcon(R.drawable.ic_notify)
             .setContentTitle(title)
-            .setContentText(text)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setContentIntent(PickupNotification.openDetails(context))
+            .apply {
+                if (NotificationPrivacy.canRedactOnLockScreen(context, notificationChannel)) {
+                    setContentText(text)
+                    setStyle(NotificationCompat.BigTextStyle().bigText(text))
+                }
+            }
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+            .setPublicVersion(
+                NotificationCompat.Builder(context, channel)
+                    .setSmallIcon(R.drawable.ic_notify)
+                    .setContentTitle(title)
+                    .build()
+            )
             .setAutoCancel(true)
             .build()
         try {
