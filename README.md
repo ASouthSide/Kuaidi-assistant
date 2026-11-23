@@ -6,7 +6,7 @@
 
 ## 下载与安装
 
-从 [v2.0.1 Release](https://github.com/ASouthSide/Kuaidi-assistant/releases/tag/v2.0.1) 下载 `kuaidi-assistant-2.0.1-release.apk`。支持 Android 8.0（API 26）及以上，包名为 `com.kuaidi.assistant`。
+下载 [2.0.1 最新 APK（构建 14）](https://github.com/ASouthSide/Kuaidi-assistant/releases/download/v2.0.1/kuaidi-assistant-2.0.1-build14-release.apk)，或查看 [v2.0.1 发布说明](https://github.com/ASouthSide/Kuaidi-assistant/releases/tag/v2.0.1)。支持 Android 8.0（API 26）及以上，包名为 `com.kuaidi.assistant`。
 
 安装后打开 **设置 → 权限与超期提醒**，按需开启「接收短信」和「通知」。自动入库只处理安装和授权后收到的新短信。实际测试中，Redmi 的冷启动入库成功，应用处于后台缓存状态时系统仍可能跳过短信广播。遇到漏收，可粘贴短信补录。
 
@@ -33,6 +33,7 @@
 | 开屏、壁纸和样式 | 分别选择开屏照片和应用壁纸，可独立开关模糊。开屏可关闭或设为 1–5 秒，默认白底，左下角可跳过，底部显示应用信息。应用支持系统深色外观和圆角磨砂样式。 |
 | 超期提醒与开机恢复 | 提醒天数可设为 1–365 天，可检查短信权限、通知权限和超期频道。开启「开机后恢复提醒任务」后，系统允许时会在重启解锁后恢复定时检查。 |
 | 清除缓存与关于 | 清理临时文件时保留包裹、规则和个性化照片。「关于」可查看版本、开发者、开源协议、项目地址及数据处理说明。 |
+| 已取记录自动删除 | 在「设置 → 存储」关闭自动删除或设置 1–365 天。默认开启，标记为已取满 3 天后删除，仅对升级后标记为已取的记录生效。恢复为待取会取消计时。系统延迟后台任务时，下次打开应用会补查。 |
 
 ## 发行版与隐私
 

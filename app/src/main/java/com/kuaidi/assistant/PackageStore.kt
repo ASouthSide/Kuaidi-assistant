@@ -1,6 +1,7 @@
 package com.kuaidi.assistant
 
 import android.content.Context
+import android.content.Intent
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -9,6 +10,7 @@ object PackageStore {
     private const val PREFS = "kuaidi_prefs"
     private const val KEY = "packages"
     private const val KEY_ALIASES = "aliases"
+    internal const val ACTION_PICKED_CLEANUP = "com.kuaidi.assistant.action.PICKED_CLEANUP"
 
     private fun prefs(ctx: Context) = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
@@ -26,7 +28,20 @@ object PackageStore {
         val arr = JSONArray()
         list.forEach { arr.put(it.toJson()) }
         prefs(ctx).edit().putString(KEY, arr.toString()).apply()
+        PickedCleanupScheduler.schedule(ctx, list)
         PickupNotification.refresh(ctx, list)
+    }
+
+    @Synchronized
+    internal fun cleanupExpiredPicked(ctx: Context) {
+        val list = load(ctx)
+        val remaining = PickedCleanupPolicy.retain(list, Settings.activePickedRetentionDays(ctx), System.currentTimeMillis())
+        if (remaining.size == list.size) {
+            PickedCleanupScheduler.schedule(ctx, list)
+        } else {
+            save(ctx, remaining)
+            ctx.sendBroadcast(Intent(ACTION_PICKED_CLEANUP).setPackage(ctx.packageName))
+        }
     }
 
     @Synchronized
@@ -56,7 +71,7 @@ object PackageStore {
         val list = load(ctx)
         val i = list.indexOfFirst { it.id == id && !it.picked }
         if (i < 0) return null
-        val picked = list[i].copy(picked = true, pickedTime = System.currentTimeMillis())
+        val picked = PickedCleanupPolicy.markPicked(list[i], System.currentTimeMillis())
         list[i] = picked
         save(ctx, list)
         return picked
@@ -68,8 +83,8 @@ object PackageStore {
         val i = list.indexOfFirst { it.id == id }
         if (i >= 0) {
             val p = list[i]
-            list[i] = if (p.picked) p.copy(picked = false, pickedTime = null)
-                      else p.copy(picked = true, pickedTime = System.currentTimeMillis())
+            list[i] = if (p.picked) PickedCleanupPolicy.restore(p)
+                      else PickedCleanupPolicy.markPicked(p, System.currentTimeMillis())
             save(ctx, list)
         }
     }

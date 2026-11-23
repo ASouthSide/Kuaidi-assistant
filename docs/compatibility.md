@@ -1,6 +1,6 @@
 # Android 设备兼容性
 
-适用版本为[快递助手 2.0.1 正式侧载版](https://github.com/ASouthSide/Kuaidi-assistant/releases/tag/v2.0.1)。
+下述检测基于[快递助手 2.0.1 首次发布的正式侧载版（构建 13）](https://github.com/ASouthSide/Kuaidi-assistant/releases/tag/v2.0.1)。
 
 ## 通用功能
 

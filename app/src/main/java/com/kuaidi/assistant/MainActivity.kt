@@ -1,6 +1,9 @@
 package com.kuaidi.assistant
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
@@ -47,6 +50,11 @@ class MainActivity : AppCompatActivity() {
     private val allPackages get() = inbox.packages
     private val aliases get() = inbox.aliases
     private var setupInProgress = false
+    private val pickedCleanupUpdates = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            reload()
+        }
+    }
 
     private val dateOptions = listOf("全部", "今天", "近3天", "近7天")
 
@@ -155,10 +163,24 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        PackageStore.cleanupExpiredPicked(this)
         reload()
         preferencesPage.refreshPermissions()
         PickupNotification.refresh(this)
         OverdueReceiver.checkAndNotify(this)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        ContextCompat.registerReceiver(
+            this, pickedCleanupUpdates, IntentFilter(PackageStore.ACTION_PICKED_CLEANUP),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
+    }
+
+    override fun onStop() {
+        unregisterReceiver(pickedCleanupUpdates)
+        super.onStop()
     }
 
     override fun onNewIntent(intent: Intent) {

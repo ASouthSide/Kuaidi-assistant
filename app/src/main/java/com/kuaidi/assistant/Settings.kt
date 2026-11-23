@@ -46,6 +46,30 @@ object Settings {
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean("restore_on_boot", enabled).apply()
     }
 
+    internal fun autoDeletePicked(ctx: Context): Boolean =
+        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean("auto_delete_picked", true)
+
+    internal fun setAutoDeletePicked(ctx: Context, enabled: Boolean) {
+        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putBoolean("auto_delete_picked", enabled).apply()
+        PackageStore.cleanupExpiredPicked(ctx)
+    }
+
+    internal fun pickedRetentionDays(ctx: Context): Int =
+        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getInt("picked_retention_days", PickedCleanupPolicy.DEFAULT_DAYS)
+            .coerceIn(PickedCleanupPolicy.daysRange)
+
+    internal fun activePickedRetentionDays(ctx: Context): Int? =
+        pickedRetentionDays(ctx).takeIf { autoDeletePicked(ctx) }
+
+    internal fun setPickedRetentionDays(ctx: Context, days: Int) {
+        require(days in PickedCleanupPolicy.daysRange)
+        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putInt("picked_retention_days", days).apply()
+        PackageStore.cleanupExpiredPicked(ctx)
+    }
+
     fun identityLocations(ctx: Context): Set<String>? =
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getStringSet("identity_locations", null)?.toSet()
 

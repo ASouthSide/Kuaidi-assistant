@@ -74,9 +74,14 @@
             android:name=".OverdueReceiver"
             android:exported="false" />
 
+        <receiver
+            android:name=".PickedCleanupReceiver"
+            android:exported="false" />
+
         <receiver android:name=".BootReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
 

@@ -11,7 +11,8 @@ data class Package(
     val address: String = "",        // 详细地址（短信里「地址：xxx」）
     val arriveTime: Long,          // 到站时间（毫秒时间戳）
     val picked: Boolean = false,
-    val pickedTime: Long? = null   // 取件时间
+    val pickedTime: Long? = null,  // 取件时间
+    val eligibleForPickedCleanup: Boolean = false
 ) {
     fun toJson(): JSONObject = JSONObject().apply {
         put("id", id)
@@ -23,6 +24,7 @@ data class Package(
         put("arriveTime", arriveTime)
         put("picked", picked)
         put("pickedTime", pickedTime ?: -1L)
+        put("eligibleForPickedCleanup", eligibleForPickedCleanup)
     }
 
     companion object {
@@ -35,7 +37,8 @@ data class Package(
             address = o.optString("address", ""),
             arriveTime = o.getLong("arriveTime"),
             picked = o.getBoolean("picked"),
-            pickedTime = o.getLong("pickedTime").takeIf { it >= 0 }
+            pickedTime = o.optLong("pickedTime", -1L).takeIf { it >= 0 },
+            eligibleForPickedCleanup = o.optBoolean("eligibleForPickedCleanup", false)
         )
     }
 }

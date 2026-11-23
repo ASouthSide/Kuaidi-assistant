@@ -6,7 +6,7 @@ Kuaidi Assistant is a native Android parcel pickup organizer. The signed sideloa
 
 ## Download
 
-Get `kuaidi-assistant-2.0.1-release.apk` from the [v2.0.1 release](https://github.com/ASouthSide/Kuaidi-assistant/releases/tag/v2.0.1). It supports Android 8.0 (API 26) or later. Open **Settings → Permissions and overdue reminders** to enable incoming texts and notifications as needed. Automatic SMS intake starts with newly received messages after permission is granted. On the tested Redmi, a new text started the receiver from a stopped process, while HyperOS could skip delivery to a cached background process. If an incoming text is missed, paste it into the inbox to add it manually.
+Download the [latest 2.0.1 APK (build 14)](https://github.com/ASouthSide/Kuaidi-assistant/releases/download/v2.0.1/kuaidi-assistant-2.0.1-build14-release.apk), or see the [v2.0.1 release notes](https://github.com/ASouthSide/Kuaidi-assistant/releases/tag/v2.0.1). It supports Android 8.0 (API 26) or later. Open **Settings → Permissions and overdue reminders** to enable incoming texts and notifications as needed. Automatic SMS intake starts with newly received messages after permission is granted. On the tested Redmi, a new text started the receiver from a stopped process, while HyperOS could skip delivery to a cached background process. If an incoming text is missed, paste it into the inbox to add it manually.
 
 Android requires matching package names and signing certificates for updates. The v1.8 debug APK and the signed 2.0.0 release use different certificates. Uninstalling an installed edition removes its local app data.
 
@@ -26,6 +26,7 @@ See the [device compatibility report (Chinese)](docs/compatibility.md) for devic
 - **Personalize the interface** with separate launch and app background photos, optional blur, a skippable 0–5 second launch screen, rounded frosted surfaces and system dark mode.
 - **Configure reminders and permissions** with a 1–365 day overdue threshold, permission and notification channel status, and optional restoration of reminder scheduling after a system restart.
 - **Clear temporary files** while retaining parcel records, rules and photos. The About section shows privacy information, the project link, version and license.
+- **Automatically delete picked-up parcels** after 3 days by default. Set a retention period of 1–365 days or turn cleanup off under **Settings → Storage**. This applies to parcels marked as picked up after upgrading. Restoring a parcel to pending cancels its timer. Opening the app catches up on scheduled cleanup if Android delayed it.
 
 ## Editions and data
 

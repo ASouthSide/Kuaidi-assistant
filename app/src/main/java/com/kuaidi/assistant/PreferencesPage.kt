@@ -132,6 +132,20 @@ internal class PreferencesPage(
             button("管理自动打开的取件点") { editLocations() }
 
             heading("存储")
+            toggle("自动删除已取快递", Settings.autoDeletePicked(activity)) { enabled ->
+                Settings.setAutoDeletePicked(activity, enabled)
+            }
+            fun retentionLabel() = "已取保留 · " + Settings.pickedRetentionDays(activity) + " 天"
+            val retention = button(retentionLabel()) {}
+            retention.setOnClickListener {
+                askText("已取保留天数", "输入 1–365 天", Settings.pickedRetentionDays(activity).toString(), true) { raw ->
+                    val days = raw.toIntOrNull()?.takeIf { it in PickedCleanupPolicy.daysRange } ?: return@askText false
+                    Settings.setPickedRetentionDays(activity, days)
+                    retention.text = retentionLabel()
+                    true
+                }
+            }
+            text("仅清理更新后标记为已取的记录。天数从标记时算起，修改后会重新计算。自动删除无法撤销。")
             button("清除缓存") { clearCache() }
 
             heading("关于")
