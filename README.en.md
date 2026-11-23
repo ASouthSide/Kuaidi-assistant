@@ -10,6 +10,10 @@ Get `kuaidi-assistant-2.0.1-release.apk` from the [v2.0.1 release](https://githu
 
 Android requires matching package names and signing certificates for updates. The v1.8 debug APK and the signed 2.0.0 release use different certificates. Uninstalling an installed edition removes its local app data.
 
+## Device compatibility
+
+See the [device compatibility report (Chinese)](docs/compatibility.md) for device tests and background SMS limitations.
+
 ## Features
 
 - **Add parcels** from new SMS messages in the sideload edition, pasted text, manual entry, camera photos or gallery images. Local Chinese OCR lets you review and edit results before saving.
